@@ -268,7 +268,7 @@ export class Paths {
 		let path = pathModule.posix.join(BASE_DIR, "auth.json")
 
 		if (Platform.OS === "ios") {
-			path = pathModule.posix.join(await ReactNativeBlobUtil.fs.pathForAppGroup("group.io.filen.app"), "auth.json")
+			path = pathModule.posix.join(await ReactNativeBlobUtil.fs.pathForAppGroup("group.dev.filen.app"), "auth.json")
 		}
 
 		this.fileProviderAuthFilePath = path
