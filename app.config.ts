@@ -5,8 +5,6 @@ export const VERSION: string = "3.0.35"
 
 export const APPLE_TEAM_ID: string = "REPLACE_ME"
 export const IOS_APP_GROUP_ID: string = "group.dev.filen.app"
-export const JS_ENGINE: "hermes" | "jsc" = "hermes"
-export const NEW_ARCH_ENABLED: boolean = true
 export const ANDROID_MIN_SDK_VERSION: number = 31
 export const ANDROID_TARGET_SDK_VERSION: number = 36
 export const ANDROID_COMPILE_SDK_VERSION: number = 36
@@ -47,8 +45,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	icon: "./assets/images/icon.png",
 	scheme: "iofilenapp",
 	userInterfaceStyle: "automatic",
-	newArchEnabled: NEW_ARCH_ENABLED,
-	jsEngine: JS_ENGINE,
 	platforms: ["ios", "android"],
 	githubUrl: "https://github.com/FilenCloudDienste/filen-mobile",
 	ios: {
@@ -58,8 +54,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		bundleIdentifier: IDENTIFIER,
 		requireFullScreen: true,
 		usesIcloudStorage: true,
-		newArchEnabled: NEW_ARCH_ENABLED,
-		jsEngine: JS_ENGINE,
 		appleTeamId: APPLE_TEAM_ID,
 		entitlements: {
 			"com.apple.security.application-groups": [IOS_APP_GROUP_ID]
@@ -121,9 +115,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	android: {
 		version: VERSION,
 		versionCode: BUILD_NUMBER,
-		edgeToEdgeEnabled: true,
-		newArchEnabled: NEW_ARCH_ENABLED,
-		jsEngine: JS_ENGINE,
 		allowBackup: false,
 		adaptiveIcon: {
 			foregroundImage: "./assets/images/adaptive-icon.png",
@@ -256,6 +247,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 				developmentTeamId: APPLE_TEAM_ID
 			}
 		],
+		"@react-native-community/datetimepicker",
+		"expo-sharing",
+		"expo-asset",
 		"expo-font",
 		[
 			"expo-splash-screen",

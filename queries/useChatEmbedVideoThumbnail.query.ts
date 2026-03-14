@@ -1,7 +1,8 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams, DEFAULT_QUERY_OPTIONS_ETERNAL } from "./client"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
-import * as VideoThumbnails from "expo-video-thumbnails"
+import { createVideoPlayer } from "expo-video"
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import * as FileSystem from "expo-file-system"
 import { xxHash32 } from "js-xxhash"
 import nodeWorker from "@/lib/nodeWorker"
@@ -31,21 +32,37 @@ export async function fetchData(params: UseChatEmbedVideoThumbnailQueryParams) {
 			throw new Error("Node worker HTTP server is not alive.")
 		}
 
-		const videoThumbnail = await VideoThumbnails.getThumbnailAsync(params.source, {
-			quality: 0.7,
-			time: 500
-		})
+		const player = createVideoPlayer(params.source)
 
-		const videoThumbnailFile = new FileSystem.File(videoThumbnail.uri)
+		try {
+			const thumbnails = await player.generateThumbnailsAsync([0.5])
+			const videoThumbnail = thumbnails[0]
 
-		if (!videoThumbnailFile.exists) {
-			throw new Error("Failed to generate video thumbnail.")
-		}
+			if (!videoThumbnail) {
+				throw new Error("Failed to generate video thumbnail.")
+			}
 
-		videoThumbnailFile.move(destination)
+			const manipulated = await ImageManipulator.manipulate(videoThumbnail).renderAsync()
 
-		if (!destination.exists) {
-			throw new Error(`Generated thumbnail at ${destination.uri} does not exist.`)
+			const result = await manipulated.saveAsync({
+				compress: 0.7,
+				format: SaveFormat.PNG,
+				base64: false
+			})
+
+			const resultFile = new FileSystem.File(result.uri)
+
+			if (!resultFile.exists) {
+				throw new Error("Failed to save video thumbnail.")
+			}
+
+			resultFile.move(destination)
+
+			if (!destination.exists) {
+				throw new Error(`Generated thumbnail at ${destination.uri} does not exist.`)
+			}
+		} finally {
+			player.release()
 		}
 	}
 

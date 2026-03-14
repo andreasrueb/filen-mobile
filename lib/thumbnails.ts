@@ -7,7 +7,7 @@ import * as FileSystem from "expo-file-system"
 import cache from "./cache"
 import { normalizeFilePathForExpo } from "./utils"
 import sqlite from "./sqlite"
-import * as VideoThumbnails from "expo-video-thumbnails"
+import { createVideoPlayer, type VideoSource } from "expo-video"
 import { EXPO_IMAGE_MANIPULATOR_SUPPORTED_EXTENSIONS, EXPO_VIDEO_THUMBNAILS_SUPPORTED_EXTENSIONS } from "./constants"
 import download from "./download"
 import pathModule from "path"
@@ -209,10 +209,10 @@ export class Thumbnails {
 						}
 					}
 
-					const videoThumbnail = await VideoThumbnails.getThumbnailAsync(
-						originalFilePath
-							? normalizeFilePathForExpo(originalFilePath)
-							: `http://127.0.0.1:${nodeWorker.httpServerPort}/stream?file=${encodeURIComponent(
+					const videoSource: VideoSource = originalFilePath
+						? normalizeFilePathForExpo(originalFilePath)
+						: {
+								uri: `http://127.0.0.1:${nodeWorker.httpServerPort}/stream?file=${encodeURIComponent(
 									btoa(
 										JSON.stringify({
 											mime: item.mime,
@@ -225,49 +225,44 @@ export class Thumbnails {
 											region: item.region
 										})
 									)
-							  )}`,
-						{
-							...(originalFilePath
-								? {}
-								: {
-										headers: {
-											Authorization: `Bearer ${nodeWorker.httpAuthToken}`
-										}
-								  }),
-							quality: THUMBNAILS_COMPRESSION,
-							time: 500
+								)}`,
+								headers: {
+									Authorization: `Bearer ${nodeWorker.httpAuthToken}`
+								}
+						  }
+
+					const player = createVideoPlayer(videoSource)
+
+					try {
+						const thumbnails = await player.generateThumbnailsAsync([0.5])
+						const videoThumbnail = thumbnails[0]
+
+						if (!videoThumbnail) {
+							throw new Error("Failed to generate video thumbnail.")
 						}
-					)
 
-					const videoThumbnailFile = new FileSystem.File(videoThumbnail.uri)
+						const manipulated = await ImageManipulator.manipulate(videoThumbnail)
+							.resize({
+								width: THUMBNAILS_SIZE
+							})
+							.renderAsync()
 
-					if (!videoThumbnailFile.exists) {
-						throw new Error(`Generated thumbnail at ${videoThumbnail.uri} does not exist.`)
-					}
-
-					const manipulated = await ImageManipulator.manipulate(normalizeFilePathForExpo(videoThumbnail.uri))
-						.resize({
-							width: THUMBNAILS_SIZE
+						const result = await manipulated.saveAsync({
+							compress: 1,
+							format: SaveFormat.PNG,
+							base64: false
 						})
-						.renderAsync()
 
-					const result = await manipulated.saveAsync({
-						compress: 1,
-						format: SaveFormat.PNG,
-						base64: false
-					})
+						const manipulatedFile = new FileSystem.File(result.uri)
 
-					if (videoThumbnailFile.exists) {
-						videoThumbnailFile.delete()
+						if (!manipulatedFile.exists) {
+							throw new Error(`Generated thumbnail at ${result.uri} does not exist.`)
+						}
+
+						manipulatedFile.move(destinationFile)
+					} finally {
+						player.release()
 					}
-
-					const manipulatedFile = new FileSystem.File(result.uri)
-
-					if (!manipulatedFile.exists) {
-						throw new Error(`Generated thumbnail at ${result.uri} does not exist.`)
-					}
-
-					manipulatedFile.move(destinationFile)
 				} else {
 					throw new Error(`Cannot generate a thumbnail for item format ${extname}.`)
 				}
