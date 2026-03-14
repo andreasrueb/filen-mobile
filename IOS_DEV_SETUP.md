@@ -106,6 +106,51 @@ The Rust channel must be `nightly` (the crate uses `-Zhigher-ranked-assumptions`
 ### `is 'cmake' not installed?`
 The `cmake` package is needed for the heif-decoder build. It should be in `devenv.nix` packages. Verify with `which cmake`.
 
+## Device builds (code signing)
+
+The `ios/` directory is gitignored, so signing config stays local. But `app.config.ts` contains the Apple Team ID and bundle identifier that Expo uses during `prebuild`.
+
+### Free Apple Developer account
+
+A free account doesn't support App Groups or iCloud entitlements. To build on a physical device:
+
+1. **Change identifiers in `app.config.ts`:**
+   - `APPLE_TEAM_ID` → your team ID (find it in Xcode → Settings → Accounts → your Apple ID)
+   - `IDENTIFIER` → a unique bundle ID (e.g., `dev.filen.app`)
+   - `IOS_APP_GROUP_ID` → matching group ID (e.g., `group.dev.filen.app`)
+
+2. **Update the hardcoded app group in `lib/paths.ts`** (search for `group.io.filen.app`)
+
+3. **Strip entitlements** from all three targets — free accounts can't provision App Groups or iCloud:
+   - `ios/Filen/Filen.entitlements`
+   - `ios/FilenShareIntentExtension/ShareExtension.entitlements`
+   - `ios/FilenFileProvider/FilenFileProvider.entitlements`
+
+   Replace each file's contents with an empty dict:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+   <plist version="1.0">
+     <dict/>
+   </plist>
+   ```
+
+4. **Re-run prebuild** to regenerate the `ios/` directory with your identifiers:
+   ```bash
+   npm run install:prebuilds && npx expo prebuild --platform ios
+   ```
+
+5. **Build:**
+   ```bash
+   npx expo run:ios --device
+   ```
+
+**Note:** Without App Groups, the File Provider and Share Extension can't communicate with the main app (e.g., sharing auth state). The main app will still work.
+
+### Paid Apple Developer account
+
+With a paid account you can keep App Groups and iCloud. Follow the same steps above but skip step 3 — instead, update the entitlements files to reference your new group/container IDs and register them in the Apple Developer portal.
+
 ## Nuclear option: full clean rebuild
 
 ```bash
