@@ -3,7 +3,7 @@ import useReactQueryRefetchOnAppFocus from "@/hooks/useReactQueryRefetchOnAppFoc
 import { useAppStateStore } from "@/stores/appState.store"
 import { AppState, type AppStateStatus } from "react-native"
 import { useShallow } from "zustand/shallow"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import NetInfo from "@react-native-community/netinfo"
 
 export const Listeners = memo(() => {
@@ -21,10 +21,10 @@ export const Listeners = memo(() => {
 		isRefreshingRef.current = true
 
 		try {
-			const [, httpServerInfo] = await Promise.all([NetInfo.refresh(), nodeWorker.proxy("restartHTTPServer", undefined)])
+			const [, httpServerInfo] = await Promise.all([NetInfo.refresh(), filenBridge.proxy("restartHTTPServer", undefined)])
 
-			nodeWorker.httpAuthToken = httpServerInfo.authToken
-			nodeWorker.httpServerPort = httpServerInfo.port
+			filenBridge.httpAuthToken = httpServerInfo.authToken
+			filenBridge.httpServerPort = httpServerInfo.port
 
 			isRefreshingRef.current = false
 		} catch (e) {

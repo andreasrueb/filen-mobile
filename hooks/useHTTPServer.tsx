@@ -1,4 +1,4 @@
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { useEffect, useState, useCallback, useRef } from "react"
 import { AppState } from "react-native"
 
@@ -8,11 +8,11 @@ export default function useHTTPServer() {
 		httpAuthToken: string | null
 		ready: boolean
 	}>({
-		httpServerPort: nodeWorker.httpServerPort,
-		httpAuthToken: nodeWorker.httpAuthToken,
-		ready: nodeWorker.ready
+		httpServerPort: filenBridge.httpServerPort,
+		httpAuthToken: filenBridge.httpAuthToken,
+		ready: filenBridge.ready
 	})
-	const prev = useRef<string>(`${nodeWorker.httpServerPort}:${nodeWorker.httpAuthToken}:${nodeWorker.ready}`)
+	const prev = useRef<string>(`${filenBridge.httpServerPort}:${filenBridge.httpAuthToken}:${filenBridge.ready}`)
 
 	const buildStreamURL = useCallback(
 		(file: {
@@ -54,16 +54,16 @@ export default function useHTTPServer() {
 			}
 
 			setTimeout(() => {
-				if (prev.current === `${nodeWorker.httpServerPort}:${nodeWorker.httpAuthToken}:${nodeWorker.ready}`) {
+				if (prev.current === `${filenBridge.httpServerPort}:${filenBridge.httpAuthToken}:${filenBridge.ready}`) {
 					return
 				}
 
-				prev.current = `${nodeWorker.httpServerPort}:${nodeWorker.httpAuthToken}:${nodeWorker.ready}`
+				prev.current = `${filenBridge.httpServerPort}:${filenBridge.httpAuthToken}:${filenBridge.ready}`
 
 				setInfo({
-					httpServerPort: nodeWorker.httpServerPort,
-					httpAuthToken: nodeWorker.httpAuthToken,
-					ready: nodeWorker.ready
+					httpServerPort: filenBridge.httpServerPort,
+					httpAuthToken: filenBridge.httpAuthToken,
+					ready: filenBridge.ready
 				})
 			}, 3000)
 		})

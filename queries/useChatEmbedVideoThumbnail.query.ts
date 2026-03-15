@@ -5,7 +5,7 @@ import { createVideoPlayer } from "expo-video"
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import * as FileSystem from "expo-file-system"
 import { xxHash32 } from "js-xxhash"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import pathModule from "path"
 import { sortParams } from "@/lib/utils"
 
@@ -26,10 +26,10 @@ export async function fetchData(params: UseChatEmbedVideoThumbnailQueryParams) {
 	)
 
 	if (!destination.exists) {
-		const nodeWorkerHTTPServerAlive = await nodeWorker.httpServerAlive()
+		const httpServerAlive = await filenBridge.httpServerAlive()
 
-		if (!nodeWorkerHTTPServerAlive) {
-			throw new Error("Node worker HTTP server is not alive.")
+		if (!httpServerAlive) {
+			throw new Error("HTTP server is not alive.")
 		}
 
 		const player = createVideoPlayer(params.source)

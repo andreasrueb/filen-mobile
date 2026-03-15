@@ -1,6 +1,6 @@
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import { Semaphore } from "./semaphore"
-import nodeWorker from "./nodeWorker"
+import filenBridge from "./filenBridge"
 import { randomUUID } from "expo-crypto"
 import paths from "./paths"
 import * as FileSystem from "expo-file-system"
@@ -195,16 +195,9 @@ export class Thumbnails {
 					manipulatedFile.move(destinationFile)
 				} else if (EXPO_VIDEO_THUMBNAILS_SUPPORTED_EXTENSIONS.includes(extname)) {
 					if (!originalFilePath) {
-						const [nodeWorkerPingResponse, nodeHTTPServerAlive] = await Promise.all([
-							nodeWorker.proxy("ping", undefined),
-							nodeWorker.httpServerAlive()
-						])
+						const httpServerAlive = await filenBridge.httpServerAlive()
 
-						if (nodeWorkerPingResponse !== "pong") {
-							throw new Error("Node worker is not responding.")
-						}
-
-						if (!nodeHTTPServerAlive) {
+						if (!httpServerAlive) {
 							throw new Error("HTTP server is not alive.")
 						}
 					}
@@ -212,7 +205,7 @@ export class Thumbnails {
 					const videoSource: VideoSource = originalFilePath
 						? normalizeFilePathForExpo(originalFilePath)
 						: {
-								uri: `http://127.0.0.1:${nodeWorker.httpServerPort}/stream?file=${encodeURIComponent(
+								uri: `http://127.0.0.1:${filenBridge.httpServerPort}/stream?file=${encodeURIComponent(
 									btoa(
 										JSON.stringify({
 											mime: item.mime,
@@ -227,7 +220,7 @@ export class Thumbnails {
 									)
 								)}`,
 								headers: {
-									Authorization: `Bearer ${nodeWorker.httpAuthToken}`
+									Authorization: `Bearer ${filenBridge.httpAuthToken}`
 								}
 						  }
 
