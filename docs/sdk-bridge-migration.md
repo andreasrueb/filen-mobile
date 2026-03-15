@@ -5,8 +5,7 @@ Replacing the Node.js worker (`nodejs-mobile-react-native`) with a Rust SDK brid
 ## Architecture
 
 ```
-Current:  RN JS  --[message IPC]--> nodejs-mobile --> @filen/sdk (TS) + Express HTTP server
-Target:   RN JS  --[Expo Module]--> Swift/Kotlin (uniffi) --> filen-mobile-sdk-bridge (Rust) --> filen-sdk-rs
+RN JS  --[Expo Module]--> Swift/Kotlin (uniffi) --> filen-mobile-sdk-bridge (Rust) --> filen-sdk-rs
 ```
 
 ## Migration Phases
@@ -17,14 +16,14 @@ Auth handlers: `login`, `register`, `reinitSDK`, `resendConfirmation`, `forgotPa
 ### Phase 1: Cloud Operations — DONE
 30 cloud handlers migrated to Rust. See [Phase 1 details](#phase-1-details) below.
 
-### Phase 2: Chats, Notes, Contacts, User — MOSTLY DONE
-65 handlers migrated (2a–2d). 12 handlers deferred (2e).
+### Phase 2: Chats, Notes, Contacts, User — DONE
+77 handlers migrated (2a–2e).
 
 - **2a: Contacts (10)** — DONE
 - **2b: Chats + decryptChatMessage (21)** — DONE
 - **2c: Notes (25)** — DONE
-- **2d: User subset + FS (9)** — DONE (`enable/disableTwoFactorAuthentication`, `deleteAccount`, `fetchUserPublicKey`, `didExportMasterKeys`, `fetchAccount`, `changePassword`, `readFileAsString`, `writeFileAsString`)
-- **2e: User rest (11) + crypto (1)** — DEFERRED (see [Phase 2e deferred](#phase-2e-deferred) below)
+- **2d: User subset + FS (9)** — DONE
+- **2e: User rest (12)** — DONE (completed in Phase 5)
 
 ### Phase 3: Transfers — DONE
 6 handlers migrated. See [Phase 3 details](#phase-3-details) below.
