@@ -1,4 +1,5 @@
 import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { router } from "expo-router"
 import { alertPrompt } from "@/components/prompts/alertPrompt"
 import { translateMemoized } from "@/lib/i18n"
@@ -504,7 +505,7 @@ export class ChatsService {
 						}
 					}
 
-					await nodeWorker.proxy("toggleItemPublicLink", {
+					await filenBridge.proxy("toggleItemPublicLink", {
 						item,
 						enable: true,
 						linkUUID: ""
@@ -532,7 +533,7 @@ export class ChatsService {
 	private async getChatUploadsDirectoryUuid(): Promise<string> {
 		const { baseFolderUUID } = authService.getSDKConfig()
 
-		return await nodeWorker.proxy("createDirectory", {
+		return await filenBridge.proxy("createDirectory", {
 			parent: baseFolderUUID,
 			name: "Chat Uploads"
 		})

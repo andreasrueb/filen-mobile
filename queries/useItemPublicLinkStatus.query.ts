@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams, queryClient } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import type { PublicLinkExpiration } from "@filen/sdk"
 import { sortParams } from "@/lib/utils"
@@ -29,7 +29,7 @@ export type UseItemPublicLinkStatusQuery =
 
 export async function fetchData(params: UseItemPublicLinkStatusQueryParams): Promise<UseItemPublicLinkStatusQuery> {
 	if (params.item.type === "file") {
-		const result = await nodeWorker.proxy("filePublicLinkStatus", {
+		const result = await filenBridge.proxy("filePublicLinkStatus", {
 			uuid: params.item.uuid
 		})
 
@@ -51,7 +51,7 @@ export async function fetchData(params: UseItemPublicLinkStatusQueryParams): Pro
 			key: params.item.key
 		}
 	} else {
-		const result = await nodeWorker.proxy("directoryPublicLinkStatus", {
+		const result = await filenBridge.proxy("directoryPublicLinkStatus", {
 			uuid: params.item.uuid
 		})
 

@@ -1,7 +1,7 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { validate as validateUUID } from "uuid"
 import { type } from "arktype"
@@ -46,7 +46,7 @@ export async function findPlaylistDirectoryUUID(): Promise<string> {
 		throw new Error("Base folder UUID is not set.")
 	}
 
-	const rootFolderList = await nodeWorker.proxy("fetchCloudItems", {
+	const rootFolderList = await filenBridge.proxy("fetchCloudItems", {
 		parent: baseFolderUUID,
 		of: "drive",
 		receiverId: 0
@@ -55,12 +55,12 @@ export async function findPlaylistDirectoryUUID(): Promise<string> {
 	let filenDirectory = rootFolderList.filter(item => item.type === "directory").find(item => item.name === ".filen")
 
 	if (!filenDirectory) {
-		await nodeWorker.proxy("createDirectory", {
+		await filenBridge.proxy("createDirectory", {
 			parent: baseFolderUUID,
 			name: ".filen"
 		})
 
-		const rootFolderList = await nodeWorker.proxy("fetchCloudItems", {
+		const rootFolderList = await filenBridge.proxy("fetchCloudItems", {
 			parent: baseFolderUUID,
 			of: "drive",
 			receiverId: 0
@@ -73,7 +73,7 @@ export async function findPlaylistDirectoryUUID(): Promise<string> {
 		throw new Error("Filen directory not found.")
 	}
 
-	const filenDirectoryList = await nodeWorker.proxy("fetchCloudItems", {
+	const filenDirectoryList = await filenBridge.proxy("fetchCloudItems", {
 		parent: filenDirectory.uuid,
 		of: "drive",
 		receiverId: 0
@@ -82,12 +82,12 @@ export async function findPlaylistDirectoryUUID(): Promise<string> {
 	let playlistsDirectory = filenDirectoryList.filter(item => item.type === "directory").find(item => item.name === "playlists")
 
 	if (!playlistsDirectory) {
-		await nodeWorker.proxy("createDirectory", {
+		await filenBridge.proxy("createDirectory", {
 			parent: filenDirectory.uuid,
 			name: "playlists"
 		})
 
-		const filenDirectoryList = await nodeWorker.proxy("fetchCloudItems", {
+		const filenDirectoryList = await filenBridge.proxy("fetchCloudItems", {
 			parent: filenDirectory.uuid,
 			of: "drive",
 			receiverId: 0
@@ -148,7 +148,7 @@ export async function updatePlaylist(playlist: Playlist): Promise<{
 export async function fetchData(): Promise<(Playlist & { fileUUID: string })[]> {
 	const playlistsDirectoryUUID = await findPlaylistDirectoryUUID()
 
-	const playlists = await nodeWorker.proxy("fetchCloudItems", {
+	const playlists = await filenBridge.proxy("fetchCloudItems", {
 		parent: playlistsDirectoryUUID,
 		of: "drive",
 		receiverId: 0

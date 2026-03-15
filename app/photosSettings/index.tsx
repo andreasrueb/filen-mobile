@@ -4,7 +4,7 @@ import { Toggle } from "@/components/nativewindui/Toggle"
 import useCameraUpload, { setCameraUploadState } from "@/hooks/useCameraUpload"
 import { useRouter } from "expo-router"
 import driveService from "@/services/drive.service"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import { validate as validateUUID } from "uuid"
 import * as MediaLibrary from "expo-media-library"
@@ -131,7 +131,7 @@ export const Settings = memo(() => {
 		}
 
 		try {
-			const path = await nodeWorker.proxy("directoryUUIDToPath", {
+			const path = await filenBridge.proxy("directoryUUIDToPath", {
 				uuid: directory.uuid
 			})
 

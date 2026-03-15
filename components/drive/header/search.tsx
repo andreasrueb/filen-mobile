@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useState, useMemo } from "react"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { View } from "react-native"
 import { Text } from "@/components/nativewindui/Text"
 import alerts from "@/lib/alerts"
@@ -152,7 +152,7 @@ export const Search = memo(({ queryParams }: { queryParams: FetchCloudItemsParam
 		setIsLoading(true)
 
 		try {
-			const result = await nodeWorker.proxy("queryGlobalSearch", searchValue)
+			const result = await filenBridge.proxy("queryGlobalSearch", searchValue)
 
 			setResults(result)
 		} catch (e) {

@@ -1,4 +1,5 @@
 import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import * as Clipboard from "expo-clipboard"
 import alerts from "@/lib/alerts"
@@ -111,10 +112,10 @@ export class DriveService {
 		try {
 			const path =
 				item.type === "directory"
-					? await nodeWorker.proxy("directoryUUIDToPath", {
+					? await filenBridge.proxy("directoryUUIDToPath", {
 							uuid: item.uuid
 					  })
-					: await nodeWorker.proxy("fileUUIDToPath", {
+					: await filenBridge.proxy("fileUUIDToPath", {
 							uuid: item.uuid
 					  })
 
@@ -208,12 +209,12 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await nodeWorker.proxy("renameDirectory", {
+				await filenBridge.proxy("renameDirectory", {
 					uuid: item.uuid,
 					name: newName
 				})
 			} else {
-				await nodeWorker.proxy("renameFile", {
+				await filenBridge.proxy("renameFile", {
 					uuid: item.uuid,
 					name: newName,
 					metadata: {
@@ -341,7 +342,7 @@ export class DriveService {
 		}
 
 		try {
-			await nodeWorker.proxy("changeDirectoryColor", {
+			await filenBridge.proxy("changeDirectoryColor", {
 				uuid: item.uuid,
 				color
 			})
@@ -426,12 +427,12 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await nodeWorker.proxy("favoriteDirectory", {
+				await filenBridge.proxy("favoriteDirectory", {
 					uuid: item.uuid,
 					favorite: newFavoriteStatus
 				})
 			} else {
-				await nodeWorker.proxy("favoriteFile", {
+				await filenBridge.proxy("favoriteFile", {
 					uuid: item.uuid,
 					favorite: newFavoriteStatus
 				})
@@ -778,11 +779,11 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await nodeWorker.proxy("trashDirectory", {
+				await filenBridge.proxy("trashDirectory", {
 					uuid: item.uuid
 				})
 			} else {
-				await nodeWorker.proxy("trashFile", {
+				await filenBridge.proxy("trashFile", {
 					uuid: item.uuid
 				})
 			}
@@ -864,7 +865,7 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await nodeWorker.proxy("moveDirectory", {
+				await filenBridge.proxy("moveDirectory", {
 					uuid: item.uuid,
 					to: parent,
 					metadata: {
@@ -872,7 +873,7 @@ export class DriveService {
 					} satisfies FolderMetadata
 				})
 			} else {
-				await nodeWorker.proxy("moveFile", {
+				await filenBridge.proxy("moveFile", {
 					uuid: item.uuid,
 					to: parent,
 					metadata: {
@@ -959,7 +960,7 @@ export class DriveService {
 				}
 
 				const size = Object.entries(
-					await nodeWorker.proxy("getDirectoryTree", {
+					await filenBridge.proxy("getDirectoryTree", {
 						uuid: item.uuid,
 						type: "normal"
 					})
@@ -1336,7 +1337,7 @@ export class DriveService {
 		}
 
 		try {
-			await nodeWorker.proxy("removeSharedItem", {
+			await filenBridge.proxy("removeSharedItem", {
 				uuid: item.uuid
 			})
 
@@ -1394,7 +1395,7 @@ export class DriveService {
 		}
 
 		try {
-			await nodeWorker.proxy("stopSharingItem", {
+			await filenBridge.proxy("stopSharingItem", {
 				uuid: item.uuid,
 				receiverId: item.receiverId
 			})
@@ -1452,11 +1453,11 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await nodeWorker.proxy("deleteDirectory", {
+				await filenBridge.proxy("deleteDirectory", {
 					uuid: item.uuid
 				})
 			} else {
-				await nodeWorker.proxy("deleteFile", {
+				await filenBridge.proxy("deleteFile", {
 					uuid: item.uuid
 				})
 			}
@@ -1509,11 +1510,11 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await nodeWorker.proxy("restoreDirectory", {
+				await filenBridge.proxy("restoreDirectory", {
 					uuid: item.uuid
 				})
 			} else {
-				await nodeWorker.proxy("restoreFile", {
+				await filenBridge.proxy("restoreFile", {
 					uuid: item.uuid
 				})
 			}
@@ -1566,7 +1567,7 @@ export class DriveService {
 				return
 			}
 
-			await nodeWorker.proxy("toggleItemPublicLink", {
+			await filenBridge.proxy("toggleItemPublicLink", {
 				item,
 				enable: false,
 				linkUUID: status.uuid
@@ -1726,7 +1727,7 @@ export class DriveService {
 		}
 
 		try {
-			const directoryUUID = await nodeWorker.proxy("createDirectory", {
+			const directoryUUID = await filenBridge.proxy("createDirectory", {
 				parent,
 				name
 			})

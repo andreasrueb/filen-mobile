@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { getCameraUploadState } from "@/hooks/useCameraUpload"
 import { validate as validateUUID } from "uuid"
@@ -14,7 +14,7 @@ export async function fetchData() {
 		return null
 	}
 
-	const remotePath = await nodeWorker.proxy("directoryUUIDToPath", {
+	const remotePath = await filenBridge.proxy("directoryUUIDToPath", {
 		uuid: state.remote.uuid
 	})
 

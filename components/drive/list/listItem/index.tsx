@@ -19,7 +19,7 @@ import type { TextEditorItem } from "@/components/textEditor/editor"
 import type { PDFPreviewItem } from "@/app/pdfPreview"
 import type { DOCXPreviewItem } from "@/app/docxPreview"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import cache from "@/lib/cache"
 import { translateMemoized } from "@/lib/i18n"
 import type { ListRenderItemInfo } from "@shopify/flash-list"
@@ -148,7 +148,7 @@ export const ListItem = memo(
 			fullScreenLoadingModal.show()
 
 			try {
-				const parent = await nodeWorker.proxy("getDirectory", {
+				const parent = await filenBridge.proxy("getDirectory", {
 					uuid: info.item.item.parent
 				})
 

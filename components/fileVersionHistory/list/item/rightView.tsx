@@ -5,6 +5,7 @@ import { View } from "react-native"
 import { Text } from "@/components/nativewindui/Text"
 import { alertPrompt } from "@/components/prompts/alertPrompt"
 import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import { translateMemoized } from "@/lib/i18n"
@@ -76,7 +77,7 @@ export const RightView = memo(({ item, version }: { item: DriveCloudItem; versio
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("deleteFile", {
+			await filenBridge.proxy("deleteFile", {
 				uuid: version.uuid
 			})
 

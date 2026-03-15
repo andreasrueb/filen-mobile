@@ -3,6 +3,7 @@ import { getCameraUploadState } from "@/hooks/useCameraUpload"
 import { validate as validateUUID } from "uuid"
 import Semaphore from "./semaphore"
 import nodeWorker from "./nodeWorker"
+import filenBridge from "./filenBridge"
 import { convertTimestampToMs, normalizeFilePathForExpo } from "./utils"
 import { useAppStateStore } from "@/stores/appState.store"
 import { randomUUID } from "expo-crypto"
@@ -289,7 +290,7 @@ export class CameraUpload {
 		const items: Tree = {}
 		const tree =
 			this.type === "foreground"
-				? await nodeWorker.proxy("getDirectoryTree", {
+				? await filenBridge.proxy("getDirectoryTree", {
 						uuid: state.remote.uuid,
 						type: "normal"
 				  })
@@ -425,7 +426,7 @@ export class CameraUpload {
 						!parentName || parentName.length === 0 || parentName === "."
 							? state.remote.uuid
 							: this.type === "foreground"
-							? await nodeWorker.proxy("createDirectory", {
+							? await filenBridge.proxy("createDirectory", {
 									name: parentName,
 									parent: state.remote.uuid
 							  })
@@ -539,7 +540,7 @@ export class CameraUpload {
 						} satisfies FileMetadata
 
 						if (this.type === "foreground") {
-							await nodeWorker.proxy("editFileMetadata", {
+							await filenBridge.proxy("editFileMetadata", {
 								uuid: item.uuid,
 								metadata: newFileMetadata
 							})
@@ -662,7 +663,7 @@ export class CameraUpload {
 
 			const remotePath =
 				this.type === "foreground"
-					? await nodeWorker.proxy("directoryUUIDToPath", {
+					? await filenBridge.proxy("directoryUUIDToPath", {
 							uuid: state.remote.uuid
 					  })
 					: await getSDK().cloud().directoryUUIDToPath({

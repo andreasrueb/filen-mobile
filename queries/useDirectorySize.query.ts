@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
 import Semaphore from "@/lib/semaphore"
@@ -20,7 +20,7 @@ export async function fetchData(params: UseDirectorySizeQueryParams) {
 	await mutex.acquire()
 
 	try {
-		return await nodeWorker.proxy("fetchDirectorySize", params)
+		return await filenBridge.proxy("fetchDirectorySize", params)
 	} finally {
 		mutex.release()
 	}

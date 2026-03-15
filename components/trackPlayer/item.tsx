@@ -14,7 +14,7 @@ import alerts from "@/lib/alerts"
 import useDimensions from "@/hooks/useDimensions"
 import assets from "@/lib/assets"
 import fullScreenLoadingModal from "../modals/fullScreenLoadingModal"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { alertPrompt } from "../prompts/alertPrompt"
 import { useTrackPlayerState } from "@/hooks/useTrackPlayerState"
 import { useTrackPlayerControls } from "@/hooks/useTrackPlayerControls"
@@ -217,7 +217,7 @@ export const Item = memo(
 					return
 				}
 
-				await nodeWorker.proxy("deleteFile", {
+				await filenBridge.proxy("deleteFile", {
 					uuid: playlistToDelete.fileUUID
 				})
 			} catch (e) {

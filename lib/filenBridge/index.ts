@@ -91,7 +91,8 @@ export class FilenBridge {
 
 			const [result] = await Promise.all([
 				FilenSdkBridgeModule.reinitSDK(paramsJson),
-				nodeWorker.proxy("reinitSDK", params)
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				nodeWorker.proxy("reinitSDK", params as any)
 			])
 
 			return result as Awaited<ReturnType<NodeWorkerHandlers[T]>>

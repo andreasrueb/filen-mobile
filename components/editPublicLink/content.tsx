@@ -5,6 +5,7 @@ import useItemPublicLinkStatusQuery, {
 } from "@/queries/useItemPublicLinkStatus.query"
 import { View, Share, Platform } from "react-native"
 import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
 import { Toggle } from "@/components/nativewindui/Toggle"
@@ -150,7 +151,7 @@ export const Inner = memo(({ item, status }: { item: DriveCloudItem; status: Use
 					return
 				}
 
-				await nodeWorker.proxy("toggleItemPublicLink", {
+				await filenBridge.proxy("toggleItemPublicLink", {
 					item,
 					enable: false,
 					linkUUID: status.uuid
@@ -158,7 +159,7 @@ export const Inner = memo(({ item, status }: { item: DriveCloudItem; status: Use
 
 				setEnabled(false)
 			} else {
-				await nodeWorker.proxy("toggleItemPublicLink", {
+				await filenBridge.proxy("toggleItemPublicLink", {
 					item,
 					enable: true,
 					linkUUID: ""

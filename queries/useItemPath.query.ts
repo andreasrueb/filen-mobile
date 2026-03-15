@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
 
@@ -12,12 +12,12 @@ export type UseItemPathQueryParams = {
 
 export async function fetchData(params: UseItemPathQueryParams) {
 	if (params.item.type === "file") {
-		return await nodeWorker.proxy("fileUUIDToPath", {
+		return await filenBridge.proxy("fileUUIDToPath", {
 			uuid: params.item.uuid
 		})
 	}
 
-	return nodeWorker.proxy("directoryUUIDToPath", {
+	return filenBridge.proxy("directoryUUIDToPath", {
 		uuid: params.item.uuid
 	})
 }

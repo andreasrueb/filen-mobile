@@ -3,7 +3,7 @@ import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./cli
 import { getCameraUploadState } from "@/hooks/useCameraUpload"
 import cache from "@/lib/cache"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { validate as validateUUID } from "uuid"
 import sqlite from "@/lib/sqlite"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
@@ -47,7 +47,7 @@ export async function fetchData(params: UseDriveItemsQueryParams): Promise<Drive
 			return []
 		}
 
-		const remotePath = await nodeWorker.proxy("directoryUUIDToPath", {
+		const remotePath = await filenBridge.proxy("directoryUUIDToPath", {
 			uuid: state.remote.uuid
 		})
 
@@ -56,7 +56,7 @@ export async function fetchData(params: UseDriveItemsQueryParams): Promise<Drive
 		}
 	}
 
-	const items = (await nodeWorker.proxy("fetchCloudItems", params)).map(item => ({
+	const items = (await filenBridge.proxy("fetchCloudItems", params)).map(item => ({
 		...item,
 		thumbnail: cache.availableThumbnails.get(item.uuid)
 	}))
