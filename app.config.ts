@@ -283,6 +283,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 				cargoArgs: "-F heif-decoder"
 			}
 		],
+		[
+			"./plugins/withSdkBridge.ts",
+			{
+				ios: {
+					crateName: "filen-mobile-sdk-bridge",
+					libName: "filen_mobile_sdk_bridge",
+					targets: ["aarch64-apple-ios", "aarch64-apple-ios-sim"]
+				},
+				android: {
+					crateName: "filen-mobile-sdk-bridge",
+					libName: "filen_mobile_sdk_bridge",
+					targets: ["x86_64", "arm64-v8a"]
+				}
+			}
+		],
 		"./plugins/withAndroidSigning",
 		"./plugins/withGradleMemory",
 		"./plugins/withAndroidLocaleConfig"

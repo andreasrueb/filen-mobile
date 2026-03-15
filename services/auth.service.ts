@@ -1,4 +1,4 @@
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
@@ -45,7 +45,7 @@ export class AuthService {
 			console.log("starting setup...")
 
 			if (!params?.background) {
-				await nodeWorker.start()
+				await filenBridge.start()
 
 				console.log("node worker started")
 			}
@@ -78,7 +78,7 @@ export class AuthService {
 			await Promise.all([
 				params?.background
 					? Promise.resolve()
-					: nodeWorker.proxy("reinitSDK", {
+					: filenBridge.proxy("reinitSDK", {
 							sdkConfig,
 							tmpPath
 					  }),
@@ -192,7 +192,7 @@ export class AuthService {
 		}
 
 		try {
-			const sdkConfig = await nodeWorker.proxy("login", {
+			const sdkConfig = await filenBridge.proxy("login", {
 				email,
 				password,
 				twoFactorCode: twoFactorCode ?? "XXXXXX"
@@ -273,7 +273,7 @@ export class AuthService {
 		}
 
 		try {
-			await nodeWorker.proxy("register", {
+			await filenBridge.proxy("register", {
 				email,
 				password
 			})
@@ -329,7 +329,7 @@ export class AuthService {
 		}
 
 		try {
-			await nodeWorker.proxy("resendConfirmation", {
+			await filenBridge.proxy("resendConfirmation", {
 				email
 			})
 
@@ -384,7 +384,7 @@ export class AuthService {
 		}
 
 		try {
-			await nodeWorker.proxy("forgotPassword", {
+			await filenBridge.proxy("forgotPassword", {
 				email
 			})
 
