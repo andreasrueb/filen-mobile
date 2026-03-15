@@ -1,4 +1,4 @@
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import * as FileSystem from "expo-file-system"
 import { getSDK } from "@/lib/sdk"
 import { Readable } from "stream"
@@ -40,7 +40,7 @@ export class Upload {
 				}))
 			}
 
-			return await nodeWorker.proxy("uploadDirectory", params)
+			return await filenBridge.proxy("uploadDirectory", params)
 		},
 		background: async (): Promise<void> => {
 			throw new Error("Background directory upload is not implemented yet.")
@@ -72,7 +72,7 @@ export class Upload {
 			}
 
 			const wantsToDeleteAfterUpload = params.deleteAfterUpload ?? false
-			const item = await nodeWorker.proxy("uploadFile", {
+			const item = await filenBridge.proxy("uploadFile", {
 				...params,
 				deleteAfterUpload: false
 			})

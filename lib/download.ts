@@ -1,4 +1,4 @@
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import * as FileSystem from "expo-file-system"
 import paths from "@/lib/paths"
 import { randomUUID } from "expo-crypto"
@@ -49,7 +49,7 @@ export class Download {
 				}))
 			}
 
-			await nodeWorker.proxy("downloadDirectory", {
+			await filenBridge.proxy("downloadDirectory", {
 				id: params.id ?? randomUUID(),
 				uuid: params.uuid,
 				destination: destination.uri,
@@ -211,7 +211,7 @@ export class Download {
 				}))
 			}
 
-			await nodeWorker.proxy("downloadFile", params)
+			await filenBridge.proxy("downloadFile", params)
 
 			if (!destination.exists) {
 				throw new Error("File download failed, file does not exist after download.")

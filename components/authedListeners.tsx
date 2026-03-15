@@ -2,7 +2,7 @@ import { memo, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "expo-router"
 import events from "@/lib/events"
 import useSDKConfig from "@/hooks/useSDKConfig"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import { AppState } from "react-native"
 import { foregroundCameraUpload } from "@/lib/cameraUpload"
@@ -15,7 +15,7 @@ export const AuthedListeners = memo(() => {
 
 	const updateTransfers = useCallback(async () => {
 		try {
-			await nodeWorker.updateTransfers()
+			await filenBridge.updateTransfers()
 		} catch (e) {
 			console.error(e)
 
