@@ -7,28 +7,62 @@ import type { NodeWorkerHandlers } from "nodeWorker"
  * These will be routed to the Expo Module instead of the Node worker.
  */
 const MIGRATED_FUNCTIONS = new Set<keyof NodeWorkerHandlers>([
+	// Auth (Phase 0)
 	"login",
 	"register",
 	"reinitSDK",
 	"resendConfirmation",
-	"forgotPassword"
+	"forgotPassword",
+	// Cloud: Directory operations (Phase 1)
+	"createDirectory",
+	"getDirectory",
+	"deleteDirectory",
+	"trashDirectory",
+	"restoreDirectory",
+	"directoryExists",
+	"renameDirectory",
+	"moveDirectory",
+	"changeDirectoryColor",
+	"favoriteDirectory",
+	"editDirectoryMetadata",
+	"fetchDirectorySize",
+	"getDirectoryTree",
+	"directoryUUIDToPath",
+	"directoryPublicLinkStatus",
+	// Cloud: File operations (Phase 1)
+	"getFile",
+	"deleteFile",
+	"trashFile",
+	"restoreFile",
+	"fileExists",
+	"renameFile",
+	"moveFile",
+	"favoriteFile",
+	"editFileMetadata",
+	"fileUUIDToPath",
+	"filePublicLinkStatus",
+	// Cloud: Listing & search (Phase 1 — partial)
+	"fetchCloudItems",
+	"queryGlobalSearch",
+	// Cloud: Public links (Phase 1)
+	"toggleItemPublicLink",
+	// Cloud: Sharing (Phase 1)
+	"stopSharingItem",
+	"removeSharedItem"
 ])
 
-type MigratedFunctionMap = {
-	login: (paramsJson: string) => Promise<string>
-	register: (paramsJson: string) => Promise<void>
-	reinitSDK: (paramsJson: string) => Promise<void>
-	resendConfirmation: (paramsJson: string) => Promise<void>
-	forgotPassword: (paramsJson: string) => Promise<void>
-}
-
-const BRIDGE_FUNCTION_MAP: Record<string, keyof MigratedFunctionMap> = {
-	login: "login",
-	register: "register",
-	reinitSDK: "reinitSDK",
-	resendConfirmation: "resendConfirmation",
-	forgotPassword: "forgotPassword"
-}
+/**
+ * fetchCloudItems types that are NOT yet supported by the Rust bridge.
+ * These will fall through to the Node worker.
+ */
+const FETCH_CLOUD_ITEMS_NODE_FALLBACK_TYPES = new Set([
+	"favorites",
+	"recents",
+	"trash",
+	"links",
+	"sharedOut",
+	"offline"
+])
 
 export class FilenBridge {
 	private initialized: boolean = false
@@ -48,22 +82,29 @@ export class FilenBridge {
 		functionName: T,
 		params: Parameters<NodeWorkerHandlers[T]>[0]
 	): Promise<Awaited<ReturnType<NodeWorkerHandlers[T]>>> {
+		// Special handling for fetchCloudItems — some types need Node fallback
+		if (functionName === "fetchCloudItems" && params && typeof params === "object" && "of" in params) {
+			const ofType = (params as { of: string }).of
+
+			if (FETCH_CLOUD_ITEMS_NODE_FALLBACK_TYPES.has(ofType)) {
+				return nodeWorker.proxy(functionName, params)
+			}
+		}
+
 		if (MIGRATED_FUNCTIONS.has(functionName)) {
 			this.initialize()
-
-			const bridgeFn = BRIDGE_FUNCTION_MAP[functionName]
-
-			if (!bridgeFn) {
-				throw new Error(`[FilenBridge] No bridge function mapping for ${functionName}`)
-			}
 
 			const paramsJson = JSON.stringify(params ?? {})
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const nativeModule = FilenSdkBridgeModule as any
 
-			const result = await nativeModule[bridgeFn](paramsJson)
+			if (typeof nativeModule[functionName] !== "function") {
+				throw new Error(`[FilenBridge] No native function for ${functionName}`)
+			}
 
-			// For functions that return JSON (like login), parse the result
+			const result = await nativeModule[functionName](paramsJson)
+
+			// For functions that return JSON, parse the result
 			if (typeof result === "string" && result.length > 0) {
 				try {
 					return JSON.parse(result)
