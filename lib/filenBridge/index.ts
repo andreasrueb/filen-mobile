@@ -56,10 +56,6 @@ const MIGRATED_FUNCTIONS = new Set<keyof NodeWorkerHandlers>([
  * These will fall through to the Node worker.
  */
 const FETCH_CLOUD_ITEMS_NODE_FALLBACK_TYPES = new Set([
-	"favorites",
-	"recents",
-	"trash",
-	"links",
 	"sharedOut",
 	"offline"
 ])
