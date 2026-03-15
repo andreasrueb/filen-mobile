@@ -4,7 +4,7 @@ import { ContextMenu } from "@/components/nativewindui/ContextMenu"
 import { createContextItem } from "@/components/nativewindui/ContextMenu/utils"
 import type { ContextItem } from "../../nativewindui/ContextMenu/types"
 import alerts from "@/lib/alerts"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import type { NoteTag } from "@filen/sdk/dist/types/api/v3/notes"
 import { alertPrompt } from "../../prompts/alertPrompt"
@@ -106,7 +106,7 @@ export const Menu = memo(({ tag, children }: { tag: NoteTag; children: React.Rea
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("deleteNoteTag", {
+			await filenBridge.proxy("deleteNoteTag", {
 				uuid: tag.uuid
 			})
 
@@ -129,7 +129,7 @@ export const Menu = memo(({ tag, children }: { tag: NoteTag; children: React.Rea
 			fullScreenLoadingModal.show()
 
 			try {
-				await nodeWorker.proxy("favoriteNoteTag", {
+				await filenBridge.proxy("favoriteNoteTag", {
 					uuid: tag.uuid,
 					favorite
 				})
@@ -185,7 +185,7 @@ export const Menu = memo(({ tag, children }: { tag: NoteTag; children: React.Rea
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("renameNoteTag", {
+			await filenBridge.proxy("renameNoteTag", {
 				uuid: tag.uuid,
 				name
 			})

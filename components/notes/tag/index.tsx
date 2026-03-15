@@ -8,7 +8,7 @@ import { useMMKVString } from "react-native-mmkv"
 import mmkvInstance from "@/lib/mmkv"
 import { validate as validateUUID } from "uuid"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
 import { cn } from "@/lib/cn"
@@ -72,7 +72,7 @@ export const Tag = memo(
 			fullScreenLoadingModal.show()
 
 			try {
-				const uuid = await nodeWorker.proxy("createNoteTag", {
+				const uuid = await filenBridge.proxy("createNoteTag", {
 					name
 				})
 

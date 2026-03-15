@@ -15,7 +15,7 @@ import { contactName, findClosestIndexString } from "@/lib/utils"
 import { Button } from "@/components/nativewindui/Button"
 import { Icon } from "@roninoss/icons"
 import { useColorScheme } from "@/lib/useColorScheme"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import Semaphore from "@/lib/semaphore"
 import { randomUUID } from "expo-crypto"
@@ -337,7 +337,7 @@ export const Input = memo(
 			async (type: "up" | "down") => {
 				await sendTypingEventMutex.current.acquire()
 
-				await nodeWorker
+				await filenBridge
 					.proxy("sendChatTyping", {
 						conversation: chat.uuid,
 						type
@@ -497,13 +497,13 @@ export const Input = memo(
 				})
 
 				if (editMessageCopied) {
-					await nodeWorker.proxy("editChatMessage", {
+					await filenBridge.proxy("editChatMessage", {
 						uuid,
 						conversation: chat.uuid,
 						message: valueCopied
 					})
 				} else {
-					await nodeWorker.proxy("sendChatMessage", {
+					await filenBridge.proxy("sendChatMessage", {
 						uuid,
 						conversation: chat.uuid,
 						message: valueCopied,
@@ -513,10 +513,10 @@ export const Input = memo(
 
 				await Promise.all([
 					sendTypingEvent("up"),
-					nodeWorker.proxy("chatMarkAsRead", {
+					filenBridge.proxy("chatMarkAsRead", {
 						conversation: chat.uuid
 					}),
-					nodeWorker.proxy("updateChatsLastFocus", {
+					filenBridge.proxy("updateChatsLastFocus", {
 						values: lastFocus.some(v => v.uuid === chat.uuid)
 							? lastFocus.map(v =>
 									v.uuid === chat.uuid

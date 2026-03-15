@@ -4,10 +4,33 @@ import paths from "@/lib/paths"
 import { randomUUID } from "expo-crypto"
 import { getSDK } from "@/lib/sdk"
 import Semaphore from "@/lib/semaphore"
-import type { NodeWorkerHandlers } from "nodeWorker"
+import type { FileEncryptionVersion } from "@filen/sdk"
 import type Cloud from "@filen/sdk/dist/types/cloud"
 import { useTransfersStore } from "@/stores/transfers.store"
 import pathModule from "path"
+
+type DownloadDirectoryParams = {
+	id: string
+	uuid: string
+	destination: string
+	name: string
+	size: number
+}
+
+type DownloadFileParams = {
+	id: string
+	uuid: string
+	bucket: string
+	region: string
+	chunks: number
+	version: FileEncryptionVersion
+	key: string
+	end?: number
+	start?: number
+	destination: string
+	size: number
+	name: string
+}
 
 export class Download {
 	private readonly setHiddenTransfers = useTransfersStore.getState().setHiddenTransfers
@@ -20,7 +43,7 @@ export class Download {
 
 	public directory = {
 		foreground: async (
-			params: Parameters<NodeWorkerHandlers["downloadDirectory"]>[0] & {
+			params: DownloadDirectoryParams & {
 				dontEmitProgress?: boolean
 			}
 		): Promise<void> => {
@@ -57,7 +80,7 @@ export class Download {
 				name: params.name
 			})
 		},
-		background: async (params: Parameters<NodeWorkerHandlers["downloadDirectory"]>[0]): Promise<void> => {
+		background: async (params: DownloadDirectoryParams): Promise<void> => {
 			if (!this.isAuthed()) {
 				throw new Error("You must be authenticated to download files.")
 			}
@@ -181,7 +204,7 @@ export class Download {
 
 	public file = {
 		foreground: async (
-			params: Parameters<NodeWorkerHandlers["downloadFile"]>[0] & {
+			params: DownloadFileParams & {
 				dontEmitProgress?: boolean
 			}
 		): Promise<void> => {
@@ -221,7 +244,7 @@ export class Download {
 				throw new Error("File download failed, file size does not match expected size.")
 			}
 		},
-		background: async (params: Parameters<NodeWorkerHandlers["downloadFile"]>[0]): Promise<void> => {
+		background: async (params: DownloadFileParams): Promise<void> => {
 			if (!this.isAuthed()) {
 				throw new Error("You must be authenticated to download files.")
 			}

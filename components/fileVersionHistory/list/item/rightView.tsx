@@ -4,7 +4,6 @@ import { Button } from "@/components/nativewindui/Button"
 import { View } from "react-native"
 import { Text } from "@/components/nativewindui/Text"
 import { alertPrompt } from "@/components/prompts/alertPrompt"
-import nodeWorker from "@/lib/nodeWorker"
 import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
@@ -41,7 +40,7 @@ export const RightView = memo(({ item, version }: { item: DriveCloudItem; versio
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("restoreFileVersion", {
+			await filenBridge.proxy("restoreFileVersion", {
 				uuid: version.uuid,
 				currentUUID: item.uuid
 			})

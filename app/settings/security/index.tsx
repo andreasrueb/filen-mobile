@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo } from "react"
 import { Settings as SettingsComponent, IconView } from "@/components/settings"
 import useAccountQuery from "@/queries/useAccount.query"
 import { useRouter } from "expo-router"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
 import { translateMemoized } from "@/lib/i18n"
 import alerts from "@/lib/alerts"
@@ -173,7 +173,7 @@ export const Security = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("changePassword", {
+			await filenBridge.proxy("changePassword", {
 				currentPassword: request.currentPassword,
 				newPassword: request.newPassword
 			})
@@ -223,7 +223,7 @@ export const Security = memo(() => {
 
 		try {
 			await authService.exportMasterKeys({})
-			await nodeWorker.proxy("didExportMasterKeys", undefined)
+			await filenBridge.proxy("didExportMasterKeys", undefined)
 		} catch (e) {
 			console.error(e)
 

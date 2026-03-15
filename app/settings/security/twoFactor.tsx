@@ -4,7 +4,7 @@ import useAccountQuery from "@/queries/useAccount.query"
 import { Toggle } from "@/components/nativewindui/Toggle"
 import alerts from "@/lib/alerts"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
 import { translateMemoized } from "@/lib/i18n"
 import { View } from "react-native"
@@ -112,11 +112,11 @@ export const TwoFactor = memo(() => {
 
 		try {
 			if (twoFactorEnabled) {
-				await nodeWorker.proxy("disableTwoFactorAuthentication", {
+				await filenBridge.proxy("disableTwoFactorAuthentication", {
 					twoFactorCode
 				})
 			} else {
-				const recoveryKeys = await nodeWorker.proxy("enableTwoFactorAuthentication", {
+				const recoveryKeys = await filenBridge.proxy("enableTwoFactorAuthentication", {
 					twoFactorCode
 				})
 

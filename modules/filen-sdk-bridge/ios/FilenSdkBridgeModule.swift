@@ -204,6 +204,51 @@ public class FilenSdkBridgeModule: Module {
             try await b.removeSharedItem(paramsJson: paramsJson)
         }
 
+        AsyncFunction("shareItems") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.shareItems(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("editItemPublicLink") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.editItemPublicLink(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("filePublicLinkInfo") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.filePublicLinkInfo(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("filePublicLinkHasPassword") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.filePublicLinkHasPassword(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("directoryPublicLinkInfo") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.directoryPublicLinkInfo(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("directorySizePublicLink") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.directorySizePublicLink(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("fetchFileVersions") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.fetchFileVersions(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("restoreFileVersion") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.restoreFileVersion(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("decryptDirectoryPublicLinkKey") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.decryptDirectoryPublicLinkKey(paramsJson: paramsJson)
+        }
+
         // -- Contacts --
 
         AsyncFunction("fetchContacts") { (paramsJson: String) -> String in
@@ -525,6 +570,61 @@ public class FilenSdkBridgeModule: Module {
         AsyncFunction("changePassword") { (paramsJson: String) in
             let b = try self.getBridge()
             try await b.changePassword(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("updatePersonalInformation") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.updatePersonalInformation(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("updateNickname") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.updateNickname(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("changeEmail") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.changeEmail(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("fetchGDPR") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.fetchGdpr(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("toggleVersioning") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.toggleVersioning(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("toggleLoginAlerts") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.toggleLoginAlerts(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("deleteAllVersionedFiles") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.deleteAllVersionedFiles(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("deleteEverything") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.deleteEverything(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("fetchEvents") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.fetchEvents(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("fetchEvent") { (paramsJson: String) -> String in
+            let b = try self.getBridge()
+            return try await b.fetchEvent(paramsJson: paramsJson)
+        }
+
+        AsyncFunction("uploadAvatar") { (paramsJson: String) in
+            let b = try self.getBridge()
+            try await b.uploadAvatar(paramsJson: paramsJson)
         }
 
         // -- FS --

@@ -1,8 +1,9 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
+import type { NoteHistory } from "@filen/sdk/dist/types/api/v3/notes/history"
 
 export const BASE_QUERY_KEY = "useNoteHistoryQuery"
 
@@ -10,8 +11,8 @@ export type UseNoteHistoryQueryParams = {
 	uuid: string
 }
 
-export async function fetchData(params: UseNoteHistoryQueryParams) {
-	return await nodeWorker.proxy("fetchNoteHistory", params)
+export async function fetchData(params: UseNoteHistoryQueryParams): Promise<NoteHistory[]> {
+	return await filenBridge.proxy("fetchNoteHistory", params)
 }
 
 export function useNoteHistoryQuery(

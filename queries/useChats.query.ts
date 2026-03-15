@@ -1,13 +1,14 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
+import type { ChatConversation } from "@filen/sdk/dist/types/api/v3/chat/conversations"
 
 export const BASE_QUERY_KEY = "useChatsQuery"
 
-export async function fetchData() {
-	return await nodeWorker.proxy("fetchChats", undefined)
+export async function fetchData(): Promise<ChatConversation[]> {
+	return await filenBridge.proxy("fetchChats", undefined)
 }
 
 export function useChatsQuery(

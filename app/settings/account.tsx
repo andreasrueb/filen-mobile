@@ -12,7 +12,7 @@ import { WEB_APP_ACCOUNT_SETTINGS_URL } from "@/lib/constants"
 import { Toggle } from "@/components/nativewindui/Toggle"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import * as ImagePicker from "expo-image-picker"
 import * as FileSystem from "expo-file-system"
 import { randomUUID } from "expo-crypto"
@@ -95,7 +95,7 @@ export const Account = memo(() => {
 					throw new Error(translateMemoized("settings.account.errors.avatarLimit"))
 				}
 
-				await nodeWorker.proxy("uploadAvatar", {
+				await filenBridge.proxy("uploadAvatar", {
 					uri: normalizeFilePathForNode(tmpFile.uri)
 				})
 
@@ -146,7 +146,7 @@ export const Account = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await nodeWorker.proxy("toggleVersioning", {
+				await filenBridge.proxy("toggleVersioning", {
 					enabled: value
 				})
 
@@ -169,7 +169,7 @@ export const Account = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await nodeWorker.proxy("toggleLoginAlerts", {
+				await filenBridge.proxy("toggleLoginAlerts", {
 					enabled: value
 				})
 
@@ -220,7 +220,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("updateNickname", {
+			await filenBridge.proxy("updateNickname", {
 				nickname
 			})
 
@@ -321,7 +321,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("changeEmail", {
+			await filenBridge.proxy("changeEmail", {
 				email: request.email,
 				password: request.password
 			})
@@ -350,7 +350,7 @@ export const Account = memo(() => {
 					tmpFile.delete()
 				}
 
-				const content = await nodeWorker.proxy("fetchGDPR", undefined)
+				const content = await filenBridge.proxy("fetchGDPR", undefined)
 
 				tmpFile.write(JSON.stringify(content, null, 4), {
 					encoding: "utf8"
@@ -400,7 +400,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("deleteAllVersionedFiles", undefined)
+			await filenBridge.proxy("deleteAllVersionedFiles", undefined)
 
 			await account.refetch()
 		} catch (e) {
@@ -436,7 +436,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("deleteEverything", undefined)
+			await filenBridge.proxy("deleteEverything", undefined)
 
 			await account.refetch()
 		} catch (e) {
@@ -490,7 +490,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("deleteAccount", {
+			await filenBridge.proxy("deleteAccount", {
 				twoFactorCode
 			})
 

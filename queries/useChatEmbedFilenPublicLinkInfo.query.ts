@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { getPreviewType, sortParams } from "@/lib/utils"
 
@@ -20,7 +20,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkInfoQueryPara
 	}
 
 	if (params.publicLink.type === "directory") {
-		const info = await nodeWorker.proxy("directoryPublicLinkInfo", {
+		const info = await filenBridge.proxy("directoryPublicLinkInfo", {
 			uuid: params.publicLink.uuid,
 			key: params.publicLink.key
 		})
@@ -32,7 +32,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkInfoQueryPara
 			}
 		} as const
 	} else {
-		const password = await nodeWorker.proxy("filePublicLinkHasPassword", {
+		const password = await filenBridge.proxy("filePublicLinkHasPassword", {
 			uuid: params.publicLink.uuid
 		})
 
@@ -40,7 +40,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkInfoQueryPara
 			return null
 		}
 
-		const info = await nodeWorker.proxy("filePublicLinkInfo", {
+		const info = await filenBridge.proxy("filePublicLinkInfo", {
 			uuid: params.publicLink.uuid,
 			key: params.publicLink.key
 		})

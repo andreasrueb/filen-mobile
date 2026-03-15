@@ -1,9 +1,10 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
+import type { ChatMessage } from "@filen/sdk/dist/types/api/v3/chat/messages"
 
 export const BASE_QUERY_KEY = "useChatMessagesQuery"
 
@@ -12,8 +13,8 @@ export type UseChatMessagesQueryParams = {
 	timestamp?: number
 }
 
-export async function fetchData(params: UseChatMessagesQueryParams) {
-	return await nodeWorker.proxy("fetchChatMessages", params)
+export async function fetchData(params: UseChatMessagesQueryParams): Promise<ChatMessage[]> {
+	return await filenBridge.proxy("fetchChatMessages", params)
 }
 
 export function useChatMessagesQuery(

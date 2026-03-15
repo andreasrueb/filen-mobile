@@ -1,4 +1,4 @@
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import { alertPrompt } from "@/components/prompts/alertPrompt"
@@ -104,7 +104,7 @@ export class ContactsService {
 		}
 
 		try {
-			await nodeWorker.proxy("removeContact", {
+			await filenBridge.proxy("removeContact", {
 				uuid
 			})
 
@@ -165,7 +165,7 @@ export class ContactsService {
 		}
 
 		try {
-			await nodeWorker.proxy("blockContact", {
+			await filenBridge.proxy("blockContact", {
 				email
 			})
 
@@ -230,7 +230,7 @@ export class ContactsService {
 		}
 
 		try {
-			await nodeWorker.proxy("unblockContact", {
+			await filenBridge.proxy("unblockContact", {
 				uuid
 			})
 
@@ -257,7 +257,7 @@ export class ContactsService {
 		}
 
 		try {
-			await nodeWorker.proxy("acceptContactRequest", {
+			await filenBridge.proxy("acceptContactRequest", {
 				uuid
 			})
 
@@ -284,7 +284,7 @@ export class ContactsService {
 		}
 
 		try {
-			await nodeWorker.proxy("denyContactRequest", {
+			await filenBridge.proxy("denyContactRequest", {
 				uuid
 			})
 
@@ -307,7 +307,7 @@ export class ContactsService {
 		}
 
 		try {
-			await nodeWorker.proxy("deleteOutgoingContactRequest", {
+			await filenBridge.proxy("deleteOutgoingContactRequest", {
 				uuid
 			})
 
@@ -357,7 +357,7 @@ export class ContactsService {
 		}
 
 		try {
-			await nodeWorker.proxy("sendContactRequest", {
+			await filenBridge.proxy("sendContactRequest", {
 				email
 			})
 

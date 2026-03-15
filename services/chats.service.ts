@@ -1,4 +1,3 @@
-import nodeWorker from "@/lib/nodeWorker"
 import filenBridge from "@/lib/filenBridge"
 import { router } from "expo-router"
 import { alertPrompt } from "@/components/prompts/alertPrompt"
@@ -8,6 +7,7 @@ import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import authService from "./auth.service"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
 import type { ChatMessage } from "@filen/sdk/dist/types/api/v3/chat/messages"
+import type { ChatLastFocusValues } from "@filen/sdk/dist/types/api/v3/chat/lastFocusUpdate"
 import contactsService from "./contacts.service"
 import { randomUUID } from "expo-crypto"
 import type { Contact } from "@filen/sdk/dist/types/api/v3/contacts"
@@ -54,7 +54,7 @@ export class ChatsService {
 		}
 
 		try {
-			await nodeWorker.proxy("leaveChat", {
+			await filenBridge.proxy("leaveChat", {
 				conversation: chat.uuid
 			})
 
@@ -99,7 +99,7 @@ export class ChatsService {
 		}
 
 		try {
-			await nodeWorker.proxy("removeChatParticipant", {
+			await filenBridge.proxy("removeChatParticipant", {
 				conversation: chat.uuid,
 				userId: participant.userId
 			})
@@ -151,7 +151,7 @@ export class ChatsService {
 		try {
 			const uuid = randomUUID()
 
-			await nodeWorker.proxy("createChat", {
+			await filenBridge.proxy("createChat", {
 				uuid,
 				contacts
 			})
@@ -200,7 +200,7 @@ export class ChatsService {
 		}
 
 		try {
-			await nodeWorker.proxy("deleteChat", {
+			await filenBridge.proxy("deleteChat", {
 				conversation: chat.uuid
 			})
 
@@ -257,7 +257,7 @@ export class ChatsService {
 		}
 
 		try {
-			await nodeWorker.proxy("editChatName", {
+			await filenBridge.proxy("editChatName", {
 				conversation: chat.uuid,
 				name: newName
 			})
@@ -322,13 +322,13 @@ export class ChatsService {
 			})
 
 			await Promise.all([
-				nodeWorker.proxy("chatMarkAsRead", {
+				filenBridge.proxy("chatMarkAsRead", {
 					conversation: chat.uuid
 				}),
 				(async () => {
-					const lastFocusValues = await nodeWorker.proxy("fetchChatsLastFocus", undefined)
+					const lastFocusValues: ChatLastFocusValues[] = await filenBridge.proxy("fetchChatsLastFocus", undefined)
 
-					await nodeWorker.proxy("updateChatsLastFocus", {
+					await filenBridge.proxy("updateChatsLastFocus", {
 						values: lastFocusValues.some(v => v.uuid === chat.uuid)
 							? lastFocusValues.map(v =>
 									v.uuid === chat.uuid
@@ -369,7 +369,7 @@ export class ChatsService {
 		}
 
 		try {
-			await nodeWorker.proxy("muteChat", {
+			await filenBridge.proxy("muteChat", {
 				uuid: chat.uuid,
 				mute
 			})
@@ -419,7 +419,7 @@ export class ChatsService {
 		}
 
 		try {
-			await nodeWorker.proxy("disableChatMessageEmbeds", {
+			await filenBridge.proxy("disableChatMessageEmbeds", {
 				uuid: message.uuid
 			})
 
@@ -471,7 +471,7 @@ export class ChatsService {
 		}
 
 		try {
-			await nodeWorker.proxy("deleteChatMessage", {
+			await filenBridge.proxy("deleteChatMessage", {
 				uuid: message.uuid
 			})
 

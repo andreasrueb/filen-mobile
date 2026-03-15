@@ -172,6 +172,42 @@ class FilenSdkBridgeModule : Module() {
             getBridge().removeSharedItem(paramsJson)
         }
 
+        AsyncFunction("shareItems") { paramsJson: String ->
+            getBridge().shareItems(paramsJson)
+        }
+
+        AsyncFunction("editItemPublicLink") { paramsJson: String ->
+            getBridge().editItemPublicLink(paramsJson)
+        }
+
+        AsyncFunction("filePublicLinkInfo") { paramsJson: String ->
+            getBridge().filePublicLinkInfo(paramsJson)
+        }
+
+        AsyncFunction("filePublicLinkHasPassword") { paramsJson: String ->
+            getBridge().filePublicLinkHasPassword(paramsJson)
+        }
+
+        AsyncFunction("directoryPublicLinkInfo") { paramsJson: String ->
+            getBridge().directoryPublicLinkInfo(paramsJson)
+        }
+
+        AsyncFunction("directorySizePublicLink") { paramsJson: String ->
+            getBridge().directorySizePublicLink(paramsJson)
+        }
+
+        AsyncFunction("fetchFileVersions") { paramsJson: String ->
+            getBridge().fetchFileVersions(paramsJson)
+        }
+
+        AsyncFunction("restoreFileVersion") { paramsJson: String ->
+            getBridge().restoreFileVersion(paramsJson)
+        }
+
+        AsyncFunction("decryptDirectoryPublicLinkKey") { paramsJson: String ->
+            getBridge().decryptDirectoryPublicLinkKey(paramsJson)
+        }
+
         // -- Contacts --
 
         AsyncFunction("fetchContacts") { paramsJson: String ->
@@ -430,6 +466,50 @@ class FilenSdkBridgeModule : Module() {
 
         AsyncFunction("changePassword") { paramsJson: String ->
             getBridge().changePassword(paramsJson)
+        }
+
+        AsyncFunction("updatePersonalInformation") { paramsJson: String ->
+            getBridge().updatePersonalInformation(paramsJson)
+        }
+
+        AsyncFunction("updateNickname") { paramsJson: String ->
+            getBridge().updateNickname(paramsJson)
+        }
+
+        AsyncFunction("changeEmail") { paramsJson: String ->
+            getBridge().changeEmail(paramsJson)
+        }
+
+        AsyncFunction("fetchGDPR") { paramsJson: String ->
+            getBridge().fetchGdpr(paramsJson)
+        }
+
+        AsyncFunction("toggleVersioning") { paramsJson: String ->
+            getBridge().toggleVersioning(paramsJson)
+        }
+
+        AsyncFunction("toggleLoginAlerts") { paramsJson: String ->
+            getBridge().toggleLoginAlerts(paramsJson)
+        }
+
+        AsyncFunction("deleteAllVersionedFiles") { paramsJson: String ->
+            getBridge().deleteAllVersionedFiles(paramsJson)
+        }
+
+        AsyncFunction("deleteEverything") { paramsJson: String ->
+            getBridge().deleteEverything(paramsJson)
+        }
+
+        AsyncFunction("fetchEvents") { paramsJson: String ->
+            getBridge().fetchEvents(paramsJson)
+        }
+
+        AsyncFunction("fetchEvent") { paramsJson: String ->
+            getBridge().fetchEvent(paramsJson)
+        }
+
+        AsyncFunction("uploadAvatar") { paramsJson: String ->
+            getBridge().uploadAvatar(paramsJson)
         }
 
         // -- FS --

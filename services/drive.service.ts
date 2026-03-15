@@ -1,4 +1,3 @@
-import nodeWorker from "@/lib/nodeWorker"
 import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import * as Clipboard from "expo-clipboard"
@@ -593,7 +592,7 @@ export class DriveService {
 		try {
 			await Promise.all(
 				contacts.map(contact =>
-					nodeWorker.proxy("shareItems", {
+					filenBridge.proxy("shareItems", {
 						files:
 							item.type === "file"
 								? [
@@ -960,10 +959,10 @@ export class DriveService {
 				}
 
 				const size = Object.entries(
-					await filenBridge.proxy("getDirectoryTree", {
+					(await filenBridge.proxy("getDirectoryTree", {
 						uuid: item.uuid,
 						type: "normal"
-					})
+					})) as Record<string, { size: number }>
 				).reduce((acc, [_, value]) => acc + value.size, 0)
 
 				const freeDiskSpace = await FileSystemLegacy.getFreeDiskStorageAsync()

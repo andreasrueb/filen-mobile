@@ -7,7 +7,7 @@ import { ListItem, List, type ListDataItem, type ListRenderItemInfo } from "@/co
 import Container from "@/components/Container"
 import { Text } from "@/components/nativewindui/Text"
 import { Button } from "@/components/nativewindui/Button"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
 import useNoteHistoryQuery from "@/queries/useNoteHistory.query"
@@ -50,7 +50,7 @@ export const Item = memo(({ info, note }: { info: ListRenderItemInfo<ListItemInf
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("restoreNoteHistory", {
+			await filenBridge.proxy("restoreNoteHistory", {
 				uuid: note.uuid,
 				id: info.item.history.id
 			})

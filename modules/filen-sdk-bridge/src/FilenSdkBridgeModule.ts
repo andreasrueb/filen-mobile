@@ -44,6 +44,18 @@ export type FilenSdkBridgeModuleType = {
 	// Cloud: Sharing
 	stopSharingItem(paramsJson: string): Promise<void>
 	removeSharedItem(paramsJson: string): Promise<void>
+	shareItems(paramsJson: string): Promise<void>
+	// Cloud: Public link details
+	editItemPublicLink(paramsJson: string): Promise<void>
+	filePublicLinkInfo(paramsJson: string): Promise<string>
+	filePublicLinkHasPassword(paramsJson: string): Promise<string>
+	directoryPublicLinkInfo(paramsJson: string): Promise<string>
+	directorySizePublicLink(paramsJson: string): Promise<string>
+	// Cloud: File versions
+	fetchFileVersions(paramsJson: string): Promise<string>
+	restoreFileVersion(paramsJson: string): Promise<void>
+	// Cloud: Crypto
+	decryptDirectoryPublicLinkKey(paramsJson: string): Promise<string>
 	// Contacts
 	fetchContacts(paramsJson: string): Promise<string>
 	fetchIncomingContactRequests(paramsJson: string): Promise<string>
@@ -111,6 +123,17 @@ export type FilenSdkBridgeModuleType = {
 	didExportMasterKeys(paramsJson: string): Promise<void>
 	fetchAccount(paramsJson: string): Promise<string>
 	changePassword(paramsJson: string): Promise<void>
+	updatePersonalInformation(paramsJson: string): Promise<void>
+	updateNickname(paramsJson: string): Promise<void>
+	changeEmail(paramsJson: string): Promise<void>
+	fetchGDPR(paramsJson: string): Promise<string>
+	toggleVersioning(paramsJson: string): Promise<void>
+	toggleLoginAlerts(paramsJson: string): Promise<void>
+	deleteAllVersionedFiles(paramsJson: string): Promise<void>
+	deleteEverything(paramsJson: string): Promise<void>
+	fetchEvents(paramsJson: string): Promise<string>
+	fetchEvent(paramsJson: string): Promise<string>
+	uploadAvatar(paramsJson: string): Promise<void>
 	// FS
 	readFileAsString(paramsJson: string): Promise<string>
 	writeFileAsString(paramsJson: string): Promise<void>

@@ -2,7 +2,6 @@ import * as MediaLibrary from "expo-media-library"
 import { getCameraUploadState } from "@/hooks/useCameraUpload"
 import { validate as validateUUID } from "uuid"
 import Semaphore from "./semaphore"
-import nodeWorker from "./nodeWorker"
 import filenBridge from "./filenBridge"
 import { convertTimestampToMs, normalizeFilePathForExpo } from "./utils"
 import { useAppStateStore } from "@/stores/appState.store"
@@ -125,8 +124,8 @@ export class CameraUpload {
 			return false
 		}
 
-		const [nodeWorkerPing, permissions, netInfoState, powerState] = await Promise.all([
-			this.type === "foreground" ? nodeWorker.proxy("ping", undefined) : Promise.resolve("pong"),
+		const [bridgeReady, permissions, netInfoState, powerState] = await Promise.all([
+			Promise.resolve(filenBridge.ready ? "pong" : ""),
 			checkPermissions
 				? MediaLibrary.getPermissionsAsync(false, this.type === "background" ? ["photo"] : ["photo", "video"])
 				: Promise.resolve({
@@ -149,7 +148,7 @@ export class CameraUpload {
 		])
 
 		if (
-			nodeWorkerPing !== "pong" ||
+			bridgeReady !== "pong" ||
 			permissions.status === MediaLibrary.PermissionStatus.DENIED ||
 			!netInfoState.hasInternet ||
 			(!state.cellular && !netInfoState.isWifiEnabled) ||

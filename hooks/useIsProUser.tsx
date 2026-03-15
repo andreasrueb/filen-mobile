@@ -13,7 +13,7 @@ export default function useIsProUser() {
 			return false
 		}
 
-		return accountQuery.data.account.subs.some(sub => sub.activated && !sub.cancelled)
+		return accountQuery.data.account.subs?.some(sub => sub.activated && !sub.cancelled) ?? false
 	}, [accountQuery.data, accountQuery.status])
 
 	useEffect(() => {

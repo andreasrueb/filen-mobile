@@ -458,6 +458,11 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
      */
     func changeDirectoryColor(paramsJson: String) async throws 
     
+    /**
+     * Change email
+     */
+    func changeEmail(paramsJson: String) async throws 
+    
     func changeNoteParticipantPermissions(paramsJson: String) async throws 
     
     func changeNoteType(paramsJson: String) async throws 
@@ -485,7 +490,17 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
     
     func decryptChatMessage(paramsJson: String) async throws  -> String
     
+    /**
+     * Decrypt a folder link encryption key using master keys
+     */
+    func decryptDirectoryPublicLinkKey(paramsJson: String) async throws  -> String
+    
     func deleteAccount(paramsJson: String) async throws 
+    
+    /**
+     * Delete all versioned files
+     */
+    func deleteAllVersionedFiles(paramsJson: String) async throws 
     
     func deleteChat(paramsJson: String) async throws 
     
@@ -495,6 +510,11 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
      * Delete directory permanently
      */
     func deleteDirectory(paramsJson: String) async throws 
+    
+    /**
+     * Delete everything
+     */
+    func deleteEverything(paramsJson: String) async throws 
     
     /**
      * Delete file permanently
@@ -517,9 +537,19 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
     func directoryExists(paramsJson: String) async throws  -> String
     
     /**
+     * Get directory public link info (unauthenticated)
+     */
+    func directoryPublicLinkInfo(paramsJson: String) async throws  -> String
+    
+    /**
      * Get public link status for a directory
      */
     func directoryPublicLinkStatus(paramsJson: String) async throws  -> String
+    
+    /**
+     * Get directory size for a public link
+     */
+    func directorySizePublicLink(paramsJson: String) async throws  -> String
     
     /**
      * Convert directory UUID to path
@@ -549,6 +579,11 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
      * Edit file metadata
      */
     func editFileMetadata(paramsJson: String) async throws 
+    
+    /**
+     * Edit a public link's settings
+     */
+    func editItemPublicLink(paramsJson: String) async throws 
     
     func editNote(paramsJson: String) async throws 
     
@@ -588,6 +623,26 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
      */
     func fetchDirectorySize(paramsJson: String) async throws  -> String
     
+    /**
+     * Fetch a single event
+     */
+    func fetchEvent(paramsJson: String) async throws  -> String
+    
+    /**
+     * Fetch events
+     */
+    func fetchEvents(paramsJson: String) async throws  -> String
+    
+    /**
+     * Fetch file version history
+     */
+    func fetchFileVersions(paramsJson: String) async throws  -> String
+    
+    /**
+     * Fetch GDPR data
+     */
+    func fetchGdpr(paramsJson: String) async throws  -> String
+    
     func fetchIncomingContactRequests(paramsJson: String) async throws  -> String
     
     func fetchNoteContent(paramsJson: String) async throws  -> String
@@ -608,6 +663,16 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
      * Check if file exists
      */
     func fileExists(paramsJson: String) async throws  -> String
+    
+    /**
+     * Check if file public link has a password (unauthenticated)
+     */
+    func filePublicLinkHasPassword(paramsJson: String) async throws  -> String
+    
+    /**
+     * Get file public link info (unauthenticated)
+     */
+    func filePublicLinkInfo(paramsJson: String) async throws  -> String
     
     /**
      * Get public link status for a file
@@ -721,6 +786,11 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
      */
     func restoreFile(paramsJson: String) async throws 
     
+    /**
+     * Restore a specific file version
+     */
+    func restoreFileVersion(paramsJson: String) async throws 
+    
     func restoreNote(paramsJson: String) async throws 
     
     func restoreNoteHistory(paramsJson: String) async throws 
@@ -730,6 +800,11 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
     func sendChatTyping(paramsJson: String) async throws 
     
     func sendContactRequest(paramsJson: String) async throws 
+    
+    /**
+     * Share items with a user
+     */
+    func shareItems(paramsJson: String) async throws 
     
     func startHttpServer(paramsJson: String) async throws  -> String
     
@@ -746,6 +821,16 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
      * Toggle item public link (enable/disable)
      */
     func toggleItemPublicLink(paramsJson: String) async throws  -> String
+    
+    /**
+     * Toggle login alerts
+     */
+    func toggleLoginAlerts(paramsJson: String) async throws 
+    
+    /**
+     * Toggle versioning
+     */
+    func toggleVersioning(paramsJson: String) async throws 
     
     func transferAction(paramsJson: String) async throws  -> String
     
@@ -766,6 +851,21 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
     func untagNote(paramsJson: String) async throws 
     
     func updateChatsLastFocus(paramsJson: String) async throws 
+    
+    /**
+     * Update nickname
+     */
+    func updateNickname(paramsJson: String) async throws 
+    
+    /**
+     * Update personal information
+     */
+    func updatePersonalInformation(paramsJson: String) async throws 
+    
+    /**
+     * Upload avatar
+     */
+    func uploadAvatar(paramsJson: String) async throws 
     
     func uploadDirectory(paramsJson: String) async throws 
     
@@ -926,6 +1026,26 @@ open func changeDirectoryColor(paramsJson: String)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_change_directory_color(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Change email
+     */
+open func changeEmail(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_change_email(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -1145,11 +1265,51 @@ open func decryptChatMessage(paramsJson: String)async throws  -> String  {
         )
 }
     
+    /**
+     * Decrypt a folder link encryption key using master keys
+     */
+open func decryptDirectoryPublicLinkKey(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_decrypt_directory_public_link_key(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
 open func deleteAccount(paramsJson: String)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_delete_account(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Delete all versioned files
+     */
+open func deleteAllVersionedFiles(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_delete_all_versioned_files(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -1204,6 +1364,26 @@ open func deleteDirectory(paramsJson: String)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_delete_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Delete everything
+     */
+open func deleteEverything(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_delete_everything(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -1342,6 +1522,26 @@ open func directoryExists(paramsJson: String)async throws  -> String  {
 }
     
     /**
+     * Get directory public link info (unauthenticated)
+     */
+open func directoryPublicLinkInfo(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_directory_public_link_info(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
      * Get public link status for a directory
      */
 open func directoryPublicLinkStatus(paramsJson: String)async throws  -> String  {
@@ -1349,6 +1549,26 @@ open func directoryPublicLinkStatus(paramsJson: String)async throws  -> String  
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_directory_public_link_status(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Get directory size for a public link
+     */
+open func directorySizePublicLink(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_directory_size_public_link(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -1528,6 +1748,26 @@ open func editFileMetadata(paramsJson: String)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_edit_file_metadata(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Edit a public link's settings
+     */
+open func editItemPublicLink(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_edit_item_public_link(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -1773,6 +2013,86 @@ open func fetchDirectorySize(paramsJson: String)async throws  -> String  {
         )
 }
     
+    /**
+     * Fetch a single event
+     */
+open func fetchEvent(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_fetch_event(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Fetch events
+     */
+open func fetchEvents(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_fetch_events(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Fetch file version history
+     */
+open func fetchFileVersions(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_fetch_file_versions(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Fetch GDPR data
+     */
+open func fetchGdpr(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_fetch_gdpr(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
 open func fetchIncomingContactRequests(paramsJson: String)async throws  -> String  {
     return
         try  await uniffiRustCallAsync(
@@ -1917,6 +2237,46 @@ open func fileExists(paramsJson: String)async throws  -> String  {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_file_exists(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Check if file public link has a password (unauthenticated)
+     */
+open func filePublicLinkHasPassword(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_file_public_link_has_password(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Get file public link info (unauthenticated)
+     */
+open func filePublicLinkInfo(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_file_public_link_info(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -2476,6 +2836,26 @@ open func restoreFile(paramsJson: String)async throws   {
         )
 }
     
+    /**
+     * Restore a specific file version
+     */
+open func restoreFileVersion(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_restore_file_version(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
 open func restoreNote(paramsJson: String)async throws   {
     return
         try  await uniffiRustCallAsync(
@@ -2549,6 +2929,26 @@ open func sendContactRequest(paramsJson: String)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_send_contact_request(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Share items with a user
+     */
+open func shareItems(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_share_items(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -2648,6 +3048,46 @@ open func toggleItemPublicLink(paramsJson: String)async throws  -> String  {
             completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
             freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
             liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Toggle login alerts
+     */
+open func toggleLoginAlerts(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_toggle_login_alerts(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Toggle versioning
+     */
+open func toggleVersioning(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_toggle_versioning(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
             errorHandler: FfiConverterTypeBridgeError_lift
         )
 }
@@ -2765,6 +3205,66 @@ open func updateChatsLastFocus(paramsJson: String)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_update_chats_last_focus(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Update nickname
+     */
+open func updateNickname(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_update_nickname(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Update personal information
+     */
+open func updatePersonalInformation(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_update_personal_information(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Upload avatar
+     */
+open func uploadAvatar(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_upload_avatar(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -3122,6 +3622,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_change_directory_color() != 57965) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_change_email() != 28331) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_change_note_participant_permissions() != 63169) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -3158,7 +3661,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_decrypt_chat_message() != 48979) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_decrypt_directory_public_link_key() != 37347) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_account() != 59420) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_all_versioned_files() != 34422) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_chat() != 48241) {
@@ -3168,6 +3677,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_directory() != 61347) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_everything() != 32059) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_file() != 22067) {
@@ -3191,7 +3703,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_exists() != 47450) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_public_link_info() != 5094) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_public_link_status() != 18328) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_size_public_link() != 64646) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_uuid_to_path() != 10846) {
@@ -3222,6 +3740,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_edit_file_metadata() != 41835) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_edit_item_public_link() != 35257) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_edit_note() != 51729) {
@@ -3263,6 +3784,18 @@ private let initializationResult: InitializationResult = {
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_directory_size() != 54907) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_event() != 13254) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_events() != 39649) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_file_versions() != 10100) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_gdpr() != 42131) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_incoming_contact_requests() != 48530) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -3288,6 +3821,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_file_exists() != 57614) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_file_public_link_has_password() != 1625) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_file_public_link_info() != 43764) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_file_public_link_status() != 1456) {
@@ -3377,6 +3916,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_restore_file() != 46892) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_restore_file_version() != 19735) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_restore_note() != 62512) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -3392,6 +3934,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_send_contact_request() != 4785) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_share_items() != 33872) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_start_http_server() != 21915) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -3405,6 +3950,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_toggle_item_public_link() != 40305) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_toggle_login_alerts() != 8991) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_toggle_versioning() != 48813) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_transfer_action() != 22104) {
@@ -3426,6 +3977,15 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_update_chats_last_focus() != 47663) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_update_nickname() != 45775) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_update_personal_information() != 51652) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_upload_avatar() != 10239) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_upload_directory() != 4876) {

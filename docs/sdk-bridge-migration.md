@@ -34,11 +34,13 @@ hyper 1.x server replacing Express (video/audio playback with range requests).
 Handlers: `startHttpServer`, `stopHttpServer`, `restartHTTPServer`, `httpStatus`.
 See [Phase 4 details](#phase-4-details) below.
 
-### Phase 5: Remove Node Worker — NOT STARTED
-- Migrate remaining ~20 Node-only handlers (Phase 2e deferred + cloud edge cases)
-- Remove `nodejs-mobile-react-native` dependency
-- Remove `nodejs-assets/nodejs-project/`
-- Remove adapter pattern fallback in `lib/filenBridge/`
+### Phase 5: Remove Node Worker — DONE
+- Migrated remaining ~20 handlers to Rust bridge (cloud: shareItems, editItemPublicLink, filePublicLinkInfo, filePublicLinkHasPassword, directoryPublicLinkInfo, directorySizePublicLink, fetchFileVersions, restoreFileVersion, decryptDirectoryPublicLinkKey, sharedOut support; user: updatePersonalInformation, updateNickname, changeEmail, fetchGDPR, toggleVersioning, toggleLoginAlerts, deleteAllVersionedFiles, deleteEverything, fetchEvents, fetchEvent, uploadAvatar)
+- Migrated all ~40 call sites from `nodeWorker` to `filenBridge`
+- Removed `nodejs-mobile-react-native` dependency
+- Deleted `nodejs-assets/nodejs-project/`, `lib/nodeWorker/`, `buildNodeThread.js`
+- Simplified `lib/filenBridge/index.ts` (removed MIGRATED_FUNCTIONS, Node fallback paths)
+- Moved ambient types to `lib/types/global.d.ts`
 
 ### Progress Summary
 
@@ -50,11 +52,12 @@ See [Phase 4 details](#phase-4-details) below.
 | Phase 2b: Chats + Crypto | 21 | DONE |
 | Phase 2c: Notes | 25 | DONE |
 | Phase 2d: User + FS | 9 | DONE |
-| Phase 2e: User rest | 12 | DEFERRED |
+| Phase 2e: User rest | 12 | DONE (Phase 5) |
 | Phase 3: Transfers | 6 | DONE |
 | Phase 4: HTTP Server | 4 | DONE |
-| **Total migrated** | **111** | |
-| **Remaining on Node** | **~20** | Cloud edge cases (shareItems, publicLinkInfo, fileVersions) + Phase 2e deferred |
+| Phase 5: Remove Node | 20 | DONE |
+| **Total** | **~131** | **COMPLETE** |
+| **Remaining on Node** | **0** | Node worker fully removed |
 
 ---
 

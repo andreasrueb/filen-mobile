@@ -1,15 +1,16 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
+import type { ContactRequest } from "@filen/sdk/dist/types/api/v3/contacts/requests/in"
 
 export const BASE_QUERY_KEY = "useContactsRequestsQuery"
 
-export async function fetchData() {
+export async function fetchData(): Promise<{ incoming: ContactRequest[]; outgoing: ContactRequest[] }> {
 	const [incoming, outgoing] = await Promise.all([
-		nodeWorker.proxy("fetchIncomingContactRequests", undefined),
-		nodeWorker.proxy("fetchOutgoingContactRequests", undefined)
+		filenBridge.proxy("fetchIncomingContactRequests", undefined) as Promise<ContactRequest[]>,
+		filenBridge.proxy("fetchOutgoingContactRequests", undefined) as Promise<ContactRequest[]>
 	])
 
 	return {

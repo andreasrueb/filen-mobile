@@ -16,7 +16,7 @@ import useSDKConfig from "@/hooks/useSDKConfig"
 import Menu from "@/components/notes/participants/menu"
 import useNotesQuery, { notesQueryUpdate } from "@/queries/useNotes.query"
 import { validate as validateUUID } from "uuid"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
 import RequireInternet from "@/components/requireInternet"
@@ -202,11 +202,11 @@ export default function Participants() {
 		try {
 			const addedParticipants = await Promise.all(
 				filtered.map(async contact => {
-					const publicKey = await nodeWorker.proxy("fetchUserPublicKey", {
+					const publicKey = await filenBridge.proxy("fetchUserPublicKey", {
 						email: contact.email
 					})
 
-					await nodeWorker.proxy("addNoteParticipant", {
+					await filenBridge.proxy("addNoteParticipant", {
 						uuid: note.uuid,
 						contactUUID: contact.uuid,
 						permissionsWrite: true,

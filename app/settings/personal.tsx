@@ -5,7 +5,7 @@ import { Platform } from "react-native"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { DropdownMenu } from "@/components/nativewindui/DropdownMenu"
 import { createDropdownItem } from "@/components/nativewindui/DropdownMenu/utils"
 import { Button } from "@/components/nativewindui/Button"
@@ -256,7 +256,7 @@ export const Personal = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await nodeWorker.proxy("updatePersonalInformation", {
+				await filenBridge.proxy("updatePersonalInformation", {
 					firstName: type === "firstName" ? value : account.data?.account.personal.firstName ?? undefined,
 					lastName: type === "lastName" ? value : account.data?.account.personal.lastName ?? undefined,
 					city: type === "city" ? value : account.data?.account.personal.city ?? undefined,
@@ -291,7 +291,7 @@ export const Personal = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await nodeWorker.proxy("updatePersonalInformation", {
+				await filenBridge.proxy("updatePersonalInformation", {
 					firstName: account.data?.account.personal.firstName ?? undefined,
 					lastName: account.data?.account.personal.lastName ?? undefined,
 					city: account.data?.account.personal.city ?? undefined,

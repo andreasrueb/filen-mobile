@@ -1,8 +1,9 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
+import type { UserEvent } from "@filen/sdk/dist/types/api/v3/user/events"
 
 export const BASE_QUERY_KEY = "useEventsQuery"
 
@@ -11,8 +12,8 @@ export type UseEventsQueryParams = {
 	filter: "all"
 }
 
-export async function fetchData(params: UseEventsQueryParams) {
-	return await nodeWorker.proxy("fetchEvents", params)
+export async function fetchData(params: UseEventsQueryParams): Promise<UserEvent[]> {
+	return await filenBridge.proxy("fetchEvents", params)
 }
 
 export function useEventsQuery(

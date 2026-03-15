@@ -4,7 +4,7 @@ import { notesQueryUpdate, notesQueryRefetch } from "@/queries/useNotes.query"
 import type { Note, NoteParticipant } from "@filen/sdk/dist/types/api/v3/notes"
 import { chatsQueryUpdate, chatsQueryRefetch } from "@/queries/useChats.query"
 import type { ChatConversation, ChatConversationParticipant } from "@filen/sdk/dist/types/api/v3/chat/conversations"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useLocationInfo from "@/hooks/useLocationInfo"
 import type { ChatMessage } from "@filen/sdk/dist/types/api/v3/chat/messages"
 import { chatMessagesQueryUpdate } from "@/queries/useChatMessages.query"
@@ -205,7 +205,7 @@ async function socketEventListener(socketEvent: SocketEvent, focusedChatUUID: st
 			}
 
 			case "chatMessageEdited": {
-				const decryptedMessage = await nodeWorker.proxy("decryptChatMessage", {
+				const decryptedMessage = await filenBridge.proxy("decryptChatMessage", {
 					conversation: socketEvent.data.conversation,
 					message: socketEvent.data.message
 				})
@@ -255,12 +255,12 @@ async function socketEventListener(socketEvent: SocketEvent, focusedChatUUID: st
 				}
 
 				const [decryptedMessage, decryptedReplyToMessage] = await Promise.all([
-					nodeWorker.proxy("decryptChatMessage", {
+					filenBridge.proxy("decryptChatMessage", {
 						conversation: socketEvent.data.conversation,
 						message: socketEvent.data.message
 					}),
 					socketEvent.data.replyTo && socketEvent.data.replyTo.uuid && socketEvent.data.replyTo.uuid.length > 0
-						? nodeWorker.proxy("decryptChatMessage", {
+						? filenBridge.proxy("decryptChatMessage", {
 								conversation: socketEvent.data.conversation,
 								message: socketEvent.data.replyTo.message
 						  })

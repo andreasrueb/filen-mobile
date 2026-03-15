@@ -1,13 +1,13 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 
 export const BASE_QUERY_KEY = "useChatUnreadQuery"
 
-export async function fetchData() {
-	return await nodeWorker.proxy("chatUnread", undefined)
+export async function fetchData(): Promise<number> {
+	return await filenBridge.proxy("chatUnread", undefined)
 }
 
 export function useChatUnreadQuery(

@@ -7,7 +7,7 @@ import { usePathname } from "expo-router"
 import alerts from "@/lib/alerts"
 import authService from "@/services/auth.service"
 import useIsAuthed from "@/hooks/useIsAuthed"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import { translateMemoized } from "@/lib/i18n"
 import useNetInfo from "@/hooks/useNetInfo"
 import Semaphore from "@/lib/semaphore"
@@ -46,7 +46,7 @@ export const Reminders = memo(() => {
 
 			try {
 				await authService.exportMasterKeys({})
-				await nodeWorker.proxy("didExportMasterKeys", undefined)
+				await filenBridge.proxy("didExportMasterKeys", undefined)
 			} catch (e) {
 				console.error(e)
 

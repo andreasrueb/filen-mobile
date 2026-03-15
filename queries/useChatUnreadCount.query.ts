@@ -1,7 +1,7 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
 
@@ -11,8 +11,8 @@ export type UseChatUnreadCountQueryParams = {
 	conversation: string
 }
 
-export async function fetchData(params: UseChatUnreadCountQueryParams) {
-	return nodeWorker.proxy("chatUnreadCount", params)
+export async function fetchData(params: UseChatUnreadCountQueryParams): Promise<number> {
+	return filenBridge.proxy("chatUnreadCount", params)
 }
 
 export function useChatUnreadCountQuery(

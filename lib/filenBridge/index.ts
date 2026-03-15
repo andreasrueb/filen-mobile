@@ -1,146 +1,7 @@
 import FilenSdkBridgeModule from "../../modules/filen-sdk-bridge"
-import nodeWorker from "@/lib/nodeWorker"
-import type { NodeWorkerHandlers } from "nodeWorker"
+import type { FilenSdkBridgeModuleType } from "../../modules/filen-sdk-bridge"
 import { useTransfersStore } from "@/stores/transfers.store"
-import { httpHealthCheck } from "@/lib/nodeWorker/utils"
-
-/**
- * Set of handler functions that have been migrated to the Rust SDK bridge.
- * These will be routed to the Expo Module instead of the Node worker.
- */
-const MIGRATED_FUNCTIONS = new Set<keyof NodeWorkerHandlers>([
-	// Auth (Phase 0)
-	"login",
-	"register",
-	"reinitSDK",
-	"resendConfirmation",
-	"forgotPassword",
-	// Cloud: Directory operations (Phase 1)
-	"createDirectory",
-	"getDirectory",
-	"deleteDirectory",
-	"trashDirectory",
-	"restoreDirectory",
-	"directoryExists",
-	"renameDirectory",
-	"moveDirectory",
-	"changeDirectoryColor",
-	"favoriteDirectory",
-	"editDirectoryMetadata",
-	"fetchDirectorySize",
-	"getDirectoryTree",
-	"directoryUUIDToPath",
-	"directoryPublicLinkStatus",
-	// Cloud: File operations (Phase 1)
-	"getFile",
-	"deleteFile",
-	"trashFile",
-	"restoreFile",
-	"fileExists",
-	"renameFile",
-	"moveFile",
-	"favoriteFile",
-	"editFileMetadata",
-	"fileUUIDToPath",
-	"filePublicLinkStatus",
-	// Cloud: Listing & search (Phase 1 — partial)
-	"fetchCloudItems",
-	"queryGlobalSearch",
-	// Cloud: Public links (Phase 1)
-	"toggleItemPublicLink",
-	// Cloud: Sharing (Phase 1)
-	"stopSharingItem",
-	"removeSharedItem",
-	// Contacts (Phase 2a)
-	"fetchContacts",
-	"fetchIncomingContactRequests",
-	"fetchOutgoingContactRequests",
-	"acceptContactRequest",
-	"denyContactRequest",
-	"sendContactRequest",
-	"removeContact",
-	"blockContact",
-	"unblockContact",
-	"deleteOutgoingContactRequest",
-	// Chats (Phase 2b)
-	"fetchChats",
-	"createChat",
-	"deleteChat",
-	"leaveChat",
-	"sendChatMessage",
-	"editChatMessage",
-	"deleteChatMessage",
-	"disableChatMessageEmbeds",
-	"editChatName",
-	"sendChatTyping",
-	"chatMarkAsRead",
-	"chatOnline",
-	"chatUnread",
-	"chatUnreadCount",
-	"addChatParticipant",
-	"removeChatParticipant",
-	"fetchChatMessages",
-	"fetchChatsLastFocus",
-	"updateChatsLastFocus",
-	"muteChat",
-	// Crypto (Phase 2b)
-	"decryptChatMessage",
-	// Notes (Phase 2c)
-	"fetchNotes",
-	"fetchNoteContent",
-	"createNote",
-	"deleteNote",
-	"archiveNote",
-	"trashNote",
-	"restoreNote",
-	"duplicateNote",
-	"renameNote",
-	"editNote",
-	"changeNoteType",
-	"pinNote",
-	"favoriteNote",
-	"fetchNoteHistory",
-	"restoreNoteHistory",
-	"addNoteParticipant",
-	"removeNoteParticipant",
-	"changeNoteParticipantPermissions",
-	"fetchNotesTags",
-	"createNoteTag",
-	"deleteNoteTag",
-	"renameNoteTag",
-	"favoriteNoteTag",
-	"tagNote",
-	"untagNote",
-	// User (Phase 2d)
-	"enableTwoFactorAuthentication",
-	"disableTwoFactorAuthentication",
-	"deleteAccount",
-	"fetchUserPublicKey",
-	"didExportMasterKeys",
-	"fetchAccount",
-	"changePassword",
-	// FS (Phase 2d)
-	"readFileAsString",
-	"writeFileAsString",
-	// Transfers (Phase 3)
-	"uploadFile",
-	"downloadFile",
-	"uploadDirectory",
-	"downloadDirectory",
-	"transferAction",
-	"fetchTransfers",
-	// HTTP Server (Phase 4)
-	"restartHTTPServer"
-])
-
-/**
- * fetchCloudItems types that are NOT yet supported by the Rust bridge.
- * These will fall through to the Node worker.
- */
-const FETCH_CLOUD_ITEMS_NODE_FALLBACK_TYPES = new Set([
-	"sharedOut",
-	"offline"
-])
+import axios from "axios"
 
 export class FilenBridge {
 	private initialized: boolean = false
@@ -155,30 +16,11 @@ export class FilenBridge {
 	}
 
 	/**
-	 * Route a function call to either the Rust SDK bridge (for migrated functions)
-	 * or the Node worker (for everything else).
+	 * Call a handler function on the Rust SDK bridge.
 	 */
-	public async proxy<T extends keyof NodeWorkerHandlers>(
-		functionName: T,
-		params: Parameters<NodeWorkerHandlers[T]>[0]
-	): Promise<Awaited<ReturnType<NodeWorkerHandlers[T]>>> {
-		// reinitSDK must go to BOTH Rust bridge and Node worker,
-		// since some call sites still use nodeWorker.proxy() directly.
-		if (functionName === "reinitSDK") {
-			this.initialize()
-
-			const paramsJson = JSON.stringify(params ?? {})
-
-			const [result] = await Promise.all([
-				FilenSdkBridgeModule.reinitSDK(paramsJson),
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				nodeWorker.proxy("reinitSDK", params as any)
-			])
-
-			return result as Awaited<ReturnType<NodeWorkerHandlers[T]>>
-		}
-
-		// restartHTTPServer routes to the Rust HTTP server
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	public async proxy<T = any>(functionName: string, params?: any): Promise<T> {
+		// restartHTTPServer — update local port/token state
 		if (functionName === "restartHTTPServer") {
 			this.initialize()
 
@@ -188,45 +30,31 @@ export class FilenBridge {
 			this._httpServerPort = info.port
 			this._httpAuthToken = info.authToken
 
-			return info as Awaited<ReturnType<NodeWorkerHandlers[T]>>
+			return info as T
 		}
 
-		// Special handling for fetchCloudItems — some types need Node fallback
-		if (functionName === "fetchCloudItems" && params && typeof params === "object" && "of" in params) {
-			const ofType = (params as { of: string }).of
+		this.initialize()
 
-			if (FETCH_CLOUD_ITEMS_NODE_FALLBACK_TYPES.has(ofType)) {
-				return nodeWorker.proxy(functionName, params)
+		const paramsJson = JSON.stringify(params ?? {})
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const nativeModule = FilenSdkBridgeModule as any
+
+		if (typeof nativeModule[functionName] !== "function") {
+			throw new Error(`[FilenBridge] No native function for ${functionName}`)
+		}
+
+		const result = await nativeModule[functionName](paramsJson)
+
+		// For functions that return JSON, parse the result
+		if (typeof result === "string" && result.length > 0) {
+			try {
+				return JSON.parse(result)
+			} catch {
+				return result as T
 			}
 		}
 
-		if (MIGRATED_FUNCTIONS.has(functionName)) {
-			this.initialize()
-
-			const paramsJson = JSON.stringify(params ?? {})
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const nativeModule = FilenSdkBridgeModule as any
-
-			if (typeof nativeModule[functionName] !== "function") {
-				throw new Error(`[FilenBridge] No native function for ${functionName}`)
-			}
-
-			const result = await nativeModule[functionName](paramsJson)
-
-			// For functions that return JSON, parse the result
-			if (typeof result === "string" && result.length > 0) {
-				try {
-					return JSON.parse(result)
-				} catch {
-					return result as Awaited<ReturnType<NodeWorkerHandlers[T]>>
-				}
-			}
-
-			return result as Awaited<ReturnType<NodeWorkerHandlers[T]>>
-		}
-
-		// Fall back to Node worker for non-migrated functions
-		return nodeWorker.proxy(functionName, params)
+		return result
 	}
 
 	/**
@@ -292,12 +120,9 @@ export class FilenBridge {
 	}
 
 	/**
-	 * Start the Node worker (still needed for non-migrated functions)
-	 * and the Rust HTTP server.
+	 * Start the Rust SDK bridge and HTTP server.
 	 */
 	public async start(): Promise<void> {
-		await nodeWorker.start()
-
 		this.initialize()
 
 		try {
@@ -312,7 +137,7 @@ export class FilenBridge {
 	}
 
 	/**
-	 * Stop the Node worker and the Rust HTTP server.
+	 * Stop the Rust HTTP server.
 	 */
 	public async stop(): Promise<void> {
 		try {
@@ -323,12 +148,10 @@ export class FilenBridge {
 
 		this._httpServerPort = null
 		this._httpAuthToken = null
-
-		await nodeWorker.stop()
 	}
 
 	public get ready(): boolean {
-		return nodeWorker.ready
+		return this.initialized
 	}
 
 	public get httpServerPort(): number | null {
@@ -368,6 +191,47 @@ export class FilenBridge {
 		store.setProgress(data.progress)
 	}
 }
+
+async function httpHealthCheck({
+	url,
+	method = "GET",
+	expectedStatusCode = 200,
+	timeout = 5000,
+	headers
+}: {
+	url: string
+	expectedStatusCode?: number
+	method?: "GET" | "POST" | "HEAD"
+	timeout?: number
+	headers?: Record<string, string>
+}): Promise<boolean> {
+	const abortController = new AbortController()
+
+	const timeouter = setTimeout(() => {
+		abortController.abort()
+	}, timeout)
+
+	try {
+		const response = await axios({
+			url,
+			timeout,
+			method,
+			headers,
+			signal: abortController.signal,
+			validateStatus: status => (!expectedStatusCode ? true : expectedStatusCode === status)
+		})
+
+		clearTimeout(timeouter)
+
+		return response.status === expectedStatusCode
+	} catch {
+		clearTimeout(timeouter)
+
+		return false
+	}
+}
+
+export type { FilenSdkBridgeModuleType }
 
 export const filenBridge = new FilenBridge()
 

@@ -33,9 +33,6 @@ devenv shell -- bash -c "npm run install:prebuilds && npx expo prebuild --platfo
 npm run typecheck                # TypeScript type checking (tsc --noEmit)
 npm run lint                     # ESLint
 
-# Node worker
-npm run buildNodeThread          # Bundle the Node.js worker thread code
-
 # Dependencies
 npm install --legacy-peer-deps   # Required due to @config-plugins/react-native-blob-util peer dep
 npx expo install --fix -- --legacy-peer-deps  # Fix Expo package versions
@@ -71,23 +68,25 @@ app/
 ### Data Flow for Features
 
 ```
-queries/use*.query.ts  →  services/*.service.ts  →  lib/nodeWorker  →  @filen/sdk
-     (React Query)          (business logic)        (IPC bridge)      (Filen API)
+queries/use*.query.ts  →  services/*.service.ts  →  lib/filenBridge  →  Rust SDK bridge
+     (React Query)          (business logic)        (Expo Module)      (filen-sdk-rs)
 ```
 
-### Node Worker Thread
+### Rust SDK Bridge (`filen-rs/filen-mobile-sdk-bridge/`)
 
-CPU-intensive work (encryption, transfers, API calls) runs in a separate Node.js thread via `nodejs-mobile-react-native`.
+All SDK operations (encryption, transfers, API calls) run through a Rust native module via uniffi + Expo Module.
 
-- **Main thread side:** `lib/nodeWorker/index.ts` — Promise-based RPC with message IDs
-- **Worker side:** `nodejs-assets/nodejs-project/src/` — Handlers for cloud, transfers, auth, chats, notes
-- **Build:** `npm run buildNodeThread` bundles with esbuild to `nodejs-assets/nodejs-project/bundle.js`
+- **Expo Module:** `modules/filen-sdk-bridge/` — Swift/Kotlin wrappers exposing Rust functions
+- **JS adapter:** `lib/filenBridge/index.ts` — Routes all calls to the Expo Module, manages HTTP server
+- **Build plugin:** `plugins/withSdkBridge.ts` — Compiles Rust, generates bindings, creates XCFramework
 
 ### Rust Native Module (`filen-rs/` submodule)
 
-`filen-mobile-native-cache` — Native caching, thumbnails, crypto via uniffi bindings.
+Two crates:
+- `filen-mobile-native-cache` — Native caching, thumbnails, crypto via uniffi bindings
+- `filen-mobile-sdk-bridge` — Full SDK bridge wrapping `filen-sdk-rs` (auth, cloud, chats, notes, transfers, HTTP server)
 
-- iOS: Compiled by `plugins/withFileProvider.ts` (static lib + XCFramework)
+- iOS: Compiled by `plugins/withFileProvider.ts` + `plugins/withSdkBridge.ts`
 - Android: Compiled by `plugins/withAndroidRustBuild.ts` (cargo-ndk + Kotlin JNI)
 - Requires: Nightly Rust toolchain with iOS targets, cmake
 
@@ -95,6 +94,7 @@ CPU-intensive work (encryption, transfers, API calls) runs in a separate Node.js
 
 Notable plugins that run during prebuild:
 - `withFileProvider.ts` — Compiles Rust for iOS, sets up file provider extension with app groups
+- `withSdkBridge.ts` — Builds Rust SDK bridge, generates Swift/Kotlin bindings
 - `withAndroidRustBuild.ts` — Compiles Rust for Android via cargo-ndk
 - `withAndroidArchitectures.js` — Limits to arm64-v8a, x86_64
 
@@ -117,12 +117,12 @@ Without this, the build fails with "Provisioning profile doesn't include the App
 ## Code Conventions
 
 - **Styling:** NativeWind (Tailwind CSS for RN) with `className` props. Global CSS in `global.css`.
-- **Path aliases:** `@/` and `~/` both resolve to project root. `nodeWorker` alias for the Node worker entry.
+- **Path aliases:** `@/` and `~/` both resolve to project root.
 - **Imports:** Use double quotes. No unused vars (prefix unused with `_`).
 - **React Compiler:** Enabled (`react-compiler/react-compiler` ESLint rule is `"error"`). Components should be compatible with the React compiler — avoid patterns it can't optimize.
 - **Components:** Wrap with `memo()`. Use `useCallback`/`useMemo` where the React compiler doesn't auto-optimize.
 - **Queries:** Each query hook is a separate file in `queries/` following the `use*Query` pattern with `fetchData` as a named export.
-- **Services:** Business logic in `services/`, wrapping nodeWorker calls. "Bulk" variants handle batch operations.
+- **Services:** Business logic in `services/`, wrapping filenBridge calls. "Bulk" variants handle batch operations.
 - **Patches:** `patch-package` patches in `patches/`. After updating a patched package, regenerate the patch.
 
 ## Key Files
@@ -131,8 +131,10 @@ Without this, the build fails with "Provisioning profile doesn't include the App
 |------|---------|
 | `app.config.ts` | Expo config: app ID, permissions, all plugins, experiments |
 | `devenv.nix` | Nix dev environment: node, rust, cmake, cocoapods, iOS targets |
-| `lib/nodeWorker/index.ts` | Node worker IPC bridge (main thread side) |
+| `lib/filenBridge/index.ts` | Rust SDK bridge adapter (routes all calls to Expo Module) |
+| `modules/filen-sdk-bridge/` | Expo Module wrapping the Rust SDK bridge |
 | `queries/client.ts` | React Query client setup, SQLite persistence |
 | `services/auth.service.ts` | Auth flow, SDK initialization, biometric setup |
 | `lib/paths.ts` | All file system paths (thumbnails, downloads, cache) |
 | `lib/constants.ts` | Supported file extensions, mime types |
+| `lib/types/global.d.ts` | Ambient type declarations (DriveCloudItem, Transfer, etc.) |

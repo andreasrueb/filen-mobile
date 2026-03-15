@@ -42,8 +42,7 @@
     "ncu": "ncu --interactive --format group",
     "install:prebuilds": "tsx ./installPrebuilds.ts",
     "clean": "tsx ./clean.ts",
-    "superclean": "tsx ./superclean.ts",
-    "buildNodeThread": "node buildNodeThread.js"
+    "superclean": "tsx ./superclean.ts"
   },
   "jest": {
     "preset": "jest-expo"
@@ -142,7 +141,6 @@
     "nativewind": "^4.2.1",
     "node-html-parser": "^7.0.1",
     "node-libs-expo": "^0.0.3",
-    "nodejs-mobile-react-native": "^18.20.4",
     "quill": "^2.0.3",
     "react": "^19.2.0",
     "react-compiler-runtime": "19.1.0-rc.3",

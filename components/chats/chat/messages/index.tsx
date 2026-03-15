@@ -3,7 +3,7 @@ import type { ChatConversation } from "@filen/sdk/dist/types/api/v3/chat/convers
 import useChatMessagesQuery, { chatMessagesQueryUpdate } from "@/queries/useChatMessages.query"
 import type { ChatMessage } from "@filen/sdk/dist/types/api/v3/chat/messages"
 import Message from "./message"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import useHeaderHeight from "@/hooks/useHeaderHeight"
 import useChatsLastFocusQuery from "@/queries/useChatsLastFocus.query"
@@ -111,7 +111,7 @@ export const Messages = memo(({ chat, isPreview, inputHeight }: { chat: ChatConv
 				return
 			}
 
-			const fetched = await nodeWorker.proxy("fetchChatMessages", {
+			const fetched: ChatMessage[] = await filenBridge.proxy("fetchChatMessages", {
 				conversation: chat.uuid,
 				timestamp: firstMessage.sentTimestamp
 			})

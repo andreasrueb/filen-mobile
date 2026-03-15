@@ -1,9 +1,10 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams, queryClient } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import queryUpdater from "./updater"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
+import type { NoteType } from "@filen/sdk/dist/types/api/v3/notes"
 
 export const BASE_QUERY_KEY = "useNoteContentQuery"
 
@@ -11,8 +12,16 @@ export type UseNoteContentQueryParams = {
 	uuid: string
 }
 
-export async function fetchData(params: UseNoteContentQueryParams) {
-	return await nodeWorker.proxy("fetchNoteContent", params)
+export type NoteContent = {
+	content: string
+	type: NoteType
+	editedTimestamp: number
+	editorId: number
+	preview: string
+}
+
+export async function fetchData(params: UseNoteContentQueryParams): Promise<NoteContent> {
+	return await filenBridge.proxy("fetchNoteContent", params)
 }
 
 export function useNoteContentQuery(

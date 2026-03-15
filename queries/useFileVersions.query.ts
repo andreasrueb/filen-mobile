@@ -1,8 +1,9 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
+import type { FileVersionsResponse } from "@filen/sdk/dist/types/api/v3/file/versions"
 
 export const BASE_QUERY_KEY = "useFileVersionsQuery"
 
@@ -10,8 +11,8 @@ export type UseFileVersionsQueryParams = {
 	uuid: string
 }
 
-export async function fetchData(params: UseFileVersionsQueryParams) {
-	return await nodeWorker.proxy("fetchFileVersions", params)
+export async function fetchData(params: UseFileVersionsQueryParams): Promise<FileVersionsResponse> {
+	return await filenBridge.proxy("fetchFileVersions", params)
 }
 
 export function useFileVersionsQuery(

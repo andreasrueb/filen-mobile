@@ -1,9 +1,10 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import { sortParams } from "@/lib/utils"
+import type { Contact } from "@filen/sdk/dist/types/api/v3/contacts"
 
 export const BASE_QUERY_KEY = "useContactsQuery"
 
@@ -11,8 +12,8 @@ export type UseContactsQueryParams = {
 	type: "all" | "blocked"
 }
 
-export async function fetchData(params: UseContactsQueryParams) {
-	return await nodeWorker.proxy("fetchContacts", params)
+export async function fetchData(params: UseContactsQueryParams): Promise<Contact[]> {
+	return await filenBridge.proxy("fetchContacts", params)
 }
 
 export function useContactsQuery(

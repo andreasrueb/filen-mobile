@@ -16,7 +16,7 @@ import useSDKConfig from "@/hooks/useSDKConfig"
 import Menu from "@/components/chats/chat/participants/menu"
 import useChatsQuery, { chatsQueryUpdate } from "@/queries/useChats.query"
 import { validate as validateUUID } from "uuid"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
 import RequireInternet from "@/components/requireInternet"
@@ -200,7 +200,7 @@ export default function Participants() {
 		try {
 			const addedParticipants = await Promise.all(
 				filtered.map(async contact => {
-					await nodeWorker.proxy("addChatParticipant", {
+					await filenBridge.proxy("addChatParticipant", {
 						conversation: chat.uuid,
 						contact
 					})

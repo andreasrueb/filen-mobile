@@ -9,7 +9,7 @@ import Container from "@/components/Container"
 import { Text } from "@/components/nativewindui/Text"
 import Transfer, { type ListItemInfo } from "@/components/transfers/transfer"
 import { formatBytes, normalizeTransferProgress, bpsToReadable, getTimeRemaining } from "@/lib/utils"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import { useShallow } from "zustand/shallow"
 import { AdaptiveSearchHeader } from "@/components/nativewindui/AdaptiveSearchHeader"
@@ -82,7 +82,7 @@ export const Transfers = memo(() => {
 						return
 					}
 
-					await nodeWorker.proxy("transferAction", {
+					await filenBridge.proxy("transferAction", {
 						id: transfer.id,
 						action: "pause"
 					})
@@ -110,7 +110,7 @@ export const Transfers = memo(() => {
 						return
 					}
 
-					await nodeWorker.proxy("transferAction", {
+					await filenBridge.proxy("transferAction", {
 						id: transfer.id,
 						action: "resume"
 					})
@@ -138,7 +138,7 @@ export const Transfers = memo(() => {
 						return
 					}
 
-					await nodeWorker.proxy("transferAction", {
+					await filenBridge.proxy("transferAction", {
 						id: transfer.id,
 						action: "stop"
 					})

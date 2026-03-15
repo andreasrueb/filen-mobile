@@ -3,10 +3,44 @@ import * as FileSystem from "expo-file-system"
 import { getSDK } from "@/lib/sdk"
 import { Readable } from "stream"
 import type { ReadableStream } from "stream/web"
-import type { NodeWorkerHandlers } from "nodeWorker"
+import type { CloudItemSharedReceiver } from "@filen/sdk/dist/types/cloud"
 import thumbnails from "./thumbnails"
 import { normalizeFilePathForExpo } from "./utils"
 import { useTransfersStore } from "@/stores/transfers.store"
+
+type UploadDirectoryParams = {
+	id: string
+	localPath: string
+	parent: string
+	name: string
+	size: number
+	deleteAfterUpload?: boolean
+	isShared?: boolean
+}
+
+type UploadFileParams = {
+	id: string
+	localPath: string
+	parent: string
+	name: string
+	size: number
+	lastModified?: number
+	creation?: number
+	deleteAfterUpload?: boolean
+	uuid?: string
+} & (
+	| {
+			isShared: false
+	  }
+	| {
+			isShared: true
+			receiverEmail: string
+			receiverId: number
+			sharerEmail: string
+			sharerId: number
+			receivers: CloudItemSharedReceiver[]
+	  }
+)
 
 export class Upload {
 	private readonly setHiddenTransfers = useTransfersStore.getState().setHiddenTransfers
@@ -19,7 +53,7 @@ export class Upload {
 
 	public directory = {
 		foreground: async (
-			params: Parameters<NodeWorkerHandlers["uploadDirectory"]>[0] & {
+			params: UploadDirectoryParams & {
 				dontEmitProgress?: boolean
 			}
 		): Promise<void> => {
@@ -49,7 +83,7 @@ export class Upload {
 
 	public file = {
 		foreground: async (
-			params: Parameters<NodeWorkerHandlers["uploadFile"]>[0] & {
+			params: UploadFileParams & {
 				disableThumbnailGeneration?: boolean
 				dontEmitProgress?: boolean
 			}
@@ -100,7 +134,7 @@ export class Upload {
 			return item
 		},
 		background: async (
-			params: Parameters<NodeWorkerHandlers["uploadFile"]>[0] & {
+			params: UploadFileParams & {
 				abortSignal?: AbortSignal
 				disableThumbnailGeneration?: boolean
 			}

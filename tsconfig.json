@@ -16,8 +16,7 @@
 		"esModuleInterop": true,
 		"paths": {
 			"@/*": ["./*"],
-			"~/*": ["./*"],
-			"nodeWorker": ["./nodejs-assets/nodejs-project/src/index.ts"]
+			"~/*": ["./*"]
 		}
 	},
 	"include": [
@@ -37,8 +36,6 @@
 		"providers/**/*.tsx",
 		"services/**/*.ts",
 		"services/**/*.tsx",
-		"nodejs-assets/**/*.ts",
-		"nodejs-assets/**/*.tsx",
 		"queries/**/*.ts",
 		"queries/**/*.tsx",
 		"stores/**/*.ts",
@@ -52,5 +49,5 @@
 		"index.d.ts",
 		"app.config.ts"
 	],
-	"exclude": ["nodejs-assets/**/*", "android/**/*", "ios/**/*", ".vscode/**/*", ".expo/**/*"]
+	"exclude": ["android/**/*", "ios/**/*", ".vscode/**/*", ".expo/**/*"]
 }

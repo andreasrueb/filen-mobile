@@ -1,6 +1,6 @@
 import type { Note, NoteType, NoteTag } from "@filen/sdk/dist/types/api/v3/notes"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import authService from "./auth.service"
 import alerts from "@/lib/alerts"
 import * as FileSystem from "expo-file-system"
@@ -34,7 +34,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("changeNoteType", {
+			await filenBridge.proxy("changeNoteType", {
 				uuid: note.uuid,
 				newType
 			})
@@ -84,7 +84,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("pinNote", {
+			await filenBridge.proxy("pinNote", {
 				uuid: note.uuid,
 				pin: pinned
 			})
@@ -122,7 +122,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("favoriteNote", {
+			await filenBridge.proxy("favoriteNote", {
 				uuid: note.uuid,
 				favorite
 			})
@@ -151,7 +151,7 @@ export class NotesService {
 		}
 
 		try {
-			const newUUID = await nodeWorker.proxy("duplicateNote", {
+			const newUUID = await filenBridge.proxy("duplicateNote", {
 				uuid: note.uuid
 			})
 
@@ -199,7 +199,7 @@ export class NotesService {
 		}
 
 		try {
-			let { content } = await nodeWorker.proxy("fetchNoteContent", {
+			let { content } = await filenBridge.proxy("fetchNoteContent", {
 				uuid: note.uuid
 			})
 
@@ -309,7 +309,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("archiveNote", {
+			await filenBridge.proxy("archiveNote", {
 				uuid: note.uuid
 			})
 
@@ -357,7 +357,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("trashNote", {
+			await filenBridge.proxy("trashNote", {
 				uuid: note.uuid
 			})
 
@@ -387,7 +387,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("restoreNote", {
+			await filenBridge.proxy("restoreNote", {
 				uuid: note.uuid
 			})
 
@@ -448,7 +448,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("renameNote", {
+			await filenBridge.proxy("renameNote", {
 				uuid: note.uuid,
 				title: newTitle
 			})
@@ -499,7 +499,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("deleteNote", {
+			await filenBridge.proxy("deleteNote", {
 				uuid: note.uuid
 			})
 
@@ -546,7 +546,7 @@ export class NotesService {
 		}
 
 		try {
-			await nodeWorker.proxy("removeNoteParticipant", {
+			await filenBridge.proxy("removeNoteParticipant", {
 				uuid: note.uuid,
 				userId: userId ?? authService.getSDKConfig().userId
 			})
@@ -577,7 +577,7 @@ export class NotesService {
 				return
 			}
 
-			await nodeWorker.proxy("tagNote", {
+			await filenBridge.proxy("tagNote", {
 				uuid: note.uuid,
 				tag: tag.uuid
 			})
@@ -612,7 +612,7 @@ export class NotesService {
 				return
 			}
 
-			await nodeWorker.proxy("untagNote", {
+			await filenBridge.proxy("untagNote", {
 				uuid: note.uuid,
 				tag: tag.uuid
 			})
@@ -678,19 +678,19 @@ export class NotesService {
 		try {
 			const uuid = randomUUID()
 
-			await nodeWorker.proxy("createNote", {
+			await filenBridge.proxy("createNote", {
 				uuid,
 				title
 			})
 
 			if (type) {
-				await nodeWorker.proxy("changeNoteType", {
+				await filenBridge.proxy("changeNoteType", {
 					uuid,
 					newType: type
 				})
 			}
 
-			const notes = await nodeWorker.proxy("fetchNotes", undefined)
+			const notes: Note[] = await filenBridge.proxy("fetchNotes", undefined)
 
 			notesQueryUpdate({
 				updater: () => notes

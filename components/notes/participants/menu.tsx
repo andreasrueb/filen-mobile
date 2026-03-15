@@ -6,7 +6,7 @@ import { DropdownMenu } from "@/components/nativewindui/DropdownMenu"
 import type { Note, NoteParticipant } from "@filen/sdk/dist/types/api/v3/notes"
 import { translateMemoized } from "@/lib/i18n"
 import alerts from "@/lib/alerts"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import { alertPrompt } from "@/components/prompts/alertPrompt"
 import { useColorScheme } from "@/lib/useColorScheme"
@@ -90,7 +90,7 @@ export const Menu = memo(
 			fullScreenLoadingModal.show()
 
 			try {
-				await nodeWorker.proxy("removeNoteParticipant", {
+				await filenBridge.proxy("removeNoteParticipant", {
 					uuid: note.uuid,
 					userId: participant.userId
 				})
@@ -122,7 +122,7 @@ export const Menu = memo(
 				fullScreenLoadingModal.show()
 
 				try {
-					await nodeWorker.proxy("changeNoteParticipantPermissions", {
+					await filenBridge.proxy("changeNoteParticipantPermissions", {
 						uuid: note.uuid,
 						userId: participant.userId,
 						permissionsWrite

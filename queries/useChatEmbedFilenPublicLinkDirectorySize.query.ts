@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, useDefaultQueryParams } from "./client"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 import type { PublicLinkInfo } from "@/components/chats/chat/messages/embeds/filen"
 import { sortParams } from "@/lib/utils"
@@ -22,7 +22,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkDirectorySize
 		throw new Error("No directory provided.")
 	}
 
-	return await nodeWorker.proxy("directorySizePublicLink", {
+	return await filenBridge.proxy("directorySizePublicLink", {
 		uuid: params.info.data.info.parent,
 		linkUUID: params.parsedLink.uuid
 	})

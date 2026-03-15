@@ -8,7 +8,7 @@ import { useColorScheme } from "@/lib/useColorScheme"
 import { bgColors } from "@/components/textEditor/editor"
 import RichTextEditorDOM from "./richtext/dom"
 import Checklist from "./checklist"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import { useFocusEffect } from "expo-router"
 import useSDKConfig from "@/hooks/useSDKConfig"
@@ -100,7 +100,7 @@ export const Content = memo(
 
 				onValueChangeTimeoutRef.current = createExecutableTimeout(async () => {
 					try {
-						await nodeWorker.proxy("editNote", {
+						await filenBridge.proxy("editNote", {
 							uuid: note.uuid,
 							content: value,
 							type: note.type

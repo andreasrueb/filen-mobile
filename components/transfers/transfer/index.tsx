@@ -7,7 +7,7 @@ import { normalizeTransferProgress } from "@/lib/utils"
 import { useColorScheme } from "@/lib/useColorScheme"
 import { Icon } from "@roninoss/icons"
 import { useActionSheet } from "@expo/react-native-action-sheet"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import alerts from "@/lib/alerts"
 import useDimensions from "@/hooks/useDimensions"
 import { translateMemoized } from "@/lib/i18n"
@@ -63,12 +63,12 @@ export const Transfer = memo(({ info }: { info: ListRenderItemInfo<ListItemInfo>
 
 				try {
 					if (buttonIndex === 0 && progressNormalized <= 99) {
-						await nodeWorker.proxy("transferAction", {
+						await filenBridge.proxy("transferAction", {
 							action: info.item.transfer.state === "paused" ? "resume" : "pause",
 							id: info.item.transfer.id
 						})
 					} else if (buttonIndex === 1 && progressNormalized <= 99) {
-						await nodeWorker.proxy("transferAction", {
+						await filenBridge.proxy("transferAction", {
 							action: "stop",
 							id: info.item.transfer.id
 						})

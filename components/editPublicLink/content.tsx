@@ -4,7 +4,6 @@ import useItemPublicLinkStatusQuery, {
 	itemPublicLinkStatusQueryRefetch
 } from "@/queries/useItemPublicLinkStatus.query"
 import { View, Share, Platform } from "react-native"
-import nodeWorker from "@/lib/nodeWorker"
 import filenBridge from "@/lib/filenBridge"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
@@ -43,7 +42,7 @@ export const Inner = memo(({ item, status }: { item: DriveCloudItem; status: Use
 		fullScreenLoadingModal.show()
 
 		try {
-			await nodeWorker.proxy("editItemPublicLink", {
+			await filenBridge.proxy("editItemPublicLink", {
 				type: item.type,
 				itemUUID: item.uuid,
 				enableDownload: downloadEnabled,
@@ -113,7 +112,7 @@ export const Inner = memo(({ item, status }: { item: DriveCloudItem; status: Use
 			const key =
 				item.type === "file"
 					? status.key
-					: await nodeWorker.proxy("decryptDirectoryPublicLinkKey", {
+					: await filenBridge.proxy("decryptDirectoryPublicLinkKey", {
 							metadata: status.key
 					  })
 

@@ -1,13 +1,14 @@
 import { useQuery, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query"
 import { DEFAULT_QUERY_OPTIONS, queryClient, useDefaultQueryParams } from "./client"
 import queryUpdater from "./updater"
-import nodeWorker from "@/lib/nodeWorker"
+import filenBridge from "@/lib/filenBridge"
 import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
+import type { Note } from "@filen/sdk/dist/types/api/v3/notes"
 
 export const BASE_QUERY_KEY = "useNotesQuery"
 
-export async function fetchData() {
-	return await nodeWorker.proxy("fetchNotes", undefined)
+export async function fetchData(): Promise<Note[]> {
+	return await filenBridge.proxy("fetchNotes", undefined)
 }
 
 export function useNotesQuery(
