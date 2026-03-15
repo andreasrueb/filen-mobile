@@ -2,10 +2,6 @@ import filenBridge from "@/lib/filenBridge"
 import * as FileSystem from "expo-file-system"
 import paths from "@/lib/paths"
 import { randomUUID } from "expo-crypto"
-import { getSDK } from "@/lib/sdk"
-import Semaphore from "@/lib/semaphore"
-import type { FileEncryptionVersion } from "@filen/sdk"
-import type Cloud from "@filen/sdk/dist/types/cloud"
 import { useTransfersStore } from "@/stores/transfers.store"
 import pathModule from "path"
 
@@ -23,7 +19,7 @@ type DownloadFileParams = {
 	bucket: string
 	region: string
 	chunks: number
-	version: FileEncryptionVersion
+	version: number
 	key: string
 	end?: number
 	start?: number
@@ -36,9 +32,7 @@ export class Download {
 	private readonly setHiddenTransfers = useTransfersStore.getState().setHiddenTransfers
 
 	private isAuthed(): boolean {
-		const apiKey = getSDK().config.apiKey
-
-		return typeof apiKey === "string" && apiKey.length > 0 && apiKey !== "anonymous"
+		return filenBridge.ready
 	}
 
 	public directory = {
@@ -99,106 +93,13 @@ export class Download {
 				destination.delete()
 			}
 
-			const tree = await getSDK().cloud().getDirectoryTree({
+			await filenBridge.proxy("downloadDirectory", {
+				id: params.id ?? randomUUID(),
 				uuid: params.uuid,
-				type: "normal"
+				destination: destination.uri,
+				size: params.size,
+				name: params.name
 			})
-
-			const files: DriveCloudItem[] = []
-
-			for (const path in tree) {
-				const file = tree[path]
-
-				if (!file || file.type !== "file") {
-					continue
-				}
-
-				files.push({
-					type: "file",
-					uuid: file.uuid,
-					bucket: file.bucket,
-					region: file.region,
-					chunks: file.chunks,
-					version: file.version,
-					key: file.key,
-					size: file.size,
-					name: file.name,
-					isShared: false,
-					selected: false,
-					favorited: false,
-					lastModified: file.lastModified,
-					timestamp: file.timestamp,
-					parent: file.parent,
-					mime: file.mime,
-					rm: "",
-					path
-				})
-			}
-
-			if (files.length === 0) {
-				return
-			}
-
-			const semaphore = new Semaphore(8)
-
-			await Promise.all(
-				files
-					.sort((a, b) => (a.path ?? "").split("/").length - (b.path ?? "").split("/").length)
-					.map(async file => {
-						if (file.type !== "file" || !file.path) {
-							throw new Error("Expected file type for download.")
-						}
-
-						await semaphore.acquire()
-
-						try {
-							const uri = pathModule.posix.join(destination.uri, file.path)
-							const entry = new FileSystem.File(uri)
-
-							if (!entry.parentDirectory.exists) {
-								entry.parentDirectory.create({
-									intermediates: true
-								})
-							}
-
-							if (entry.exists) {
-								entry.delete()
-							}
-
-							entry.create()
-
-							await getSDK()
-								.cloud()
-								.downloadFileToReadableStream({
-									uuid: file.uuid,
-									bucket: file.bucket,
-									region: file.region,
-									chunks: file.chunks,
-									version: file.version,
-									key: file.key,
-									size: file.size
-								})
-								.pipeThrough(
-									new TransformStream({
-										transform(chunk, controller) {
-											controller.enqueue(new Uint8Array(chunk))
-										}
-									})
-								)
-								.pipeTo(entry.writableStream())
-
-							if (!entry.exists) {
-								throw new Error("File download failed, file does not exist after download.")
-							}
-
-							if (entry.size !== file.size) {
-								throw new Error("File download failed, file size does not match expected size.")
-							}
-						} finally {
-							semaphore.release()
-						}
-					})
-			)
 		}
 	}
 
@@ -264,27 +165,7 @@ export class Download {
 				destination.delete()
 			}
 
-			destination.create()
-
-			await getSDK()
-				.cloud()
-				.downloadFileToReadableStream({
-					uuid: params.uuid,
-					bucket: params.bucket,
-					region: params.region,
-					chunks: params.chunks,
-					version: params.version,
-					key: params.key,
-					size: params.size
-				})
-				.pipeThrough(
-					new TransformStream({
-						transform(chunk, controller) {
-							controller.enqueue(new Uint8Array(chunk))
-						}
-					})
-				)
-				.pipeTo(destination.writableStream())
+			await filenBridge.proxy("downloadFile", params)
 
 			if (!destination.exists) {
 				throw new Error("File download failed, file does not exist after download.")
@@ -293,13 +174,6 @@ export class Download {
 			if (destination.size !== params.size) {
 				throw new Error("File download failed, file size does not match expected size.")
 			}
-		},
-		stream: (params: Parameters<Cloud["downloadFileToReadableStream"]>[0]) => {
-			if (!this.isAuthed()) {
-				throw new Error("You must be authenticated to download files.")
-			}
-
-			return getSDK().cloud().downloadFileToReadableStream(params)
 		}
 	}
 }

@@ -10,7 +10,6 @@ import { alertPrompt } from "@/components/prompts/alertPrompt"
 import sqlite from "@/lib/sqlite"
 import paths from "@/lib/paths"
 import Semaphore from "@/lib/semaphore"
-import { reinitSDK } from "@/lib/sdk"
 import thumbnails from "@/lib/thumbnails"
 import assets from "@/lib/assets"
 import { normalizeFilePathForNode, sanitizeFileName } from "@/lib/utils"
@@ -67,13 +66,6 @@ export class AuthService {
 
 			const tmpPath = normalizeFilePathForNode(FileSystem.Paths.cache.uri)
 			const sdkConfig = params && params.sdkConfig ? params.sdkConfig : this.getSDKConfig()
-
-			reinitSDK({
-				...sdkConfig,
-				connectToSocket: false,
-				metadataCache: true,
-				tmpPath
-			})
 
 			await Promise.all([
 				params?.background

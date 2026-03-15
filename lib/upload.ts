@@ -1,9 +1,5 @@
 import filenBridge from "@/lib/filenBridge"
 import * as FileSystem from "expo-file-system"
-import { getSDK } from "@/lib/sdk"
-import { Readable } from "stream"
-import type { ReadableStream } from "stream/web"
-import type { CloudItemSharedReceiver } from "@filen/sdk/dist/types/cloud"
 import thumbnails from "./thumbnails"
 import { normalizeFilePathForExpo } from "./utils"
 import { useTransfersStore } from "@/stores/transfers.store"
@@ -38,7 +34,7 @@ type UploadFileParams = {
 			receiverId: number
 			sharerEmail: string
 			sharerId: number
-			receivers: CloudItemSharedReceiver[]
+			receivers: DriveCloudItem extends { receivers: infer R } ? R : never
 	  }
 )
 
@@ -46,9 +42,7 @@ export class Upload {
 	private readonly setHiddenTransfers = useTransfersStore.getState().setHiddenTransfers
 
 	private isAuthed(): boolean {
-		const apiKey = getSDK().config.apiKey
-
-		return typeof apiKey === "string" && apiKey.length > 0 && apiKey !== "anonymous"
+		return filenBridge.ready
 	}
 
 	public directory = {
@@ -119,7 +113,6 @@ export class Upload {
 					})
 					.catch(e => {
 						console.error("Failed to generate thumbnail for", item.uuid, e)
-						// We don't want to throw an error if thumbnail generation fails
 					})
 			}
 
@@ -135,7 +128,6 @@ export class Upload {
 		},
 		background: async (
 			params: UploadFileParams & {
-				abortSignal?: AbortSignal
 				disableThumbnailGeneration?: boolean
 			}
 		): Promise<DriveCloudItem> => {
@@ -149,81 +141,30 @@ export class Upload {
 				throw new Error(`Source ${params.localPath} does not exist.`)
 			}
 
-			const sourceStream = Readable.fromWeb(sourceFile.readableStream() as ReadableStream<Uint8Array<ArrayBufferLike>>)
+			const wantsToDeleteAfterUpload = params.deleteAfterUpload ?? false
+			const item: DriveCloudItem = await filenBridge.proxy("uploadFile", {
+				...params,
+				deleteAfterUpload: false
+			})
 
-			try {
-				const item = await getSDK()
-					.cloud()
-					.uploadLocalFileStream({
-						source: sourceStream,
-						parent: params.parent,
-						name: params.name ?? sourceFile.name,
-						abortSignal: params.abortSignal
+			if (!params.disableThumbnailGeneration) {
+				await thumbnails
+					.generate({
+						item,
+						originalFilePath: normalizeFilePathForExpo(params.localPath)
 					})
+					.catch(() => {
+						// We don't want to throw an error if thumbnail generation fails
+					})
+			}
 
-				if (item.type === "directory") {
-					throw new Error("Unknown SDK error.")
-				}
-
-				if (!params.disableThumbnailGeneration) {
-					await thumbnails
-						.generate({
-							item: (params.isShared
-								? {
-										...item,
-										isShared: true,
-										type: "file",
-										selected: false,
-										receiverEmail: params.receiverEmail,
-										receiverId: params.receiverId,
-										sharerEmail: params.sharerEmail,
-										sharerId: params.sharerId,
-										receivers: params.receivers
-								  }
-								: {
-										...item,
-										isShared: false,
-										type: "file",
-										selected: false
-								  }) satisfies DriveCloudItem,
-							originalFilePath: normalizeFilePathForExpo(params.localPath)
-						})
-						.catch(() => {
-							// We don't want to throw an error if thumbnail generation fails
-						})
-				}
-
-				if (params.deleteAfterUpload) {
-					if (sourceFile.exists) {
-						sourceFile.delete()
-					}
-				}
-
-				if (params.isShared) {
-					return {
-						...item,
-						isShared: true,
-						type: "file",
-						selected: false,
-						receiverEmail: params.receiverEmail,
-						receiverId: params.receiverId,
-						sharerEmail: params.sharerEmail,
-						sharerId: params.sharerId,
-						receivers: params.receivers
-					} satisfies DriveCloudItem
-				}
-
-				return {
-					...item,
-					isShared: false,
-					type: "file",
-					selected: false
-				} satisfies DriveCloudItem
-			} finally {
-				if (!sourceStream.destroyed) {
-					sourceStream.destroy()
+			if (wantsToDeleteAfterUpload) {
+				if (sourceFile.exists) {
+					sourceFile.delete()
 				}
 			}
+
+			return item
 		}
 	}
 }

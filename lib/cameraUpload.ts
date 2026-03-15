@@ -14,7 +14,6 @@ import * as Battery from "expo-battery"
 import { EXPO_IMAGE_MANIPULATOR_SUPPORTED_EXTENSIONS } from "./constants"
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import type { FileMetadata } from "@filen/sdk"
-import { getSDK } from "./sdk"
 import upload from "@/lib/upload"
 import { xxHash32 } from "js-xxhash"
 import pathModule from "path"
@@ -79,9 +78,7 @@ export class CameraUpload {
 	}
 
 	private isAuthed(): boolean {
-		const apiKey = getSDK().config.apiKey
-
-		return typeof apiKey === "string" && apiKey.length > 0 && apiKey !== "anonymous"
+		return filenBridge.ready
 	}
 
 	public async canRun({
@@ -287,16 +284,10 @@ export class CameraUpload {
 		}
 
 		const items: Tree = {}
-		const tree =
-			this.type === "foreground"
-				? await filenBridge.proxy("getDirectoryTree", {
-						uuid: state.remote.uuid,
-						type: "normal"
-				  })
-				: await getSDK().cloud().getDirectoryTree({
-						uuid: state.remote.uuid,
-						type: "normal"
-				  })
+		const tree = await filenBridge.proxy("getDirectoryTree", {
+			uuid: state.remote.uuid,
+			type: "normal"
+		})
 
 		for (const treeItemPath in tree) {
 			const file = tree[treeItemPath]
@@ -424,12 +415,7 @@ export class CameraUpload {
 					const parentUUID =
 						!parentName || parentName.length === 0 || parentName === "."
 							? state.remote.uuid
-							: this.type === "foreground"
-							? await filenBridge.proxy("createDirectory", {
-									name: parentName,
-									parent: state.remote.uuid
-							  })
-							: await getSDK().cloud().createDirectory({
+							: await filenBridge.proxy("createDirectory", {
 									name: parentName,
 									parent: state.remote.uuid
 							  })
@@ -520,8 +506,7 @@ export class CameraUpload {
 										isShared: false,
 										deleteAfterUpload: true,
 										creation: delta.item.creation,
-										lastModified: delta.item.lastModified,
-										abortSignal
+										lastModified: delta.item.lastModified
 								  })
 
 						if (item.type !== "file") {
@@ -538,17 +523,10 @@ export class CameraUpload {
 							key: item.key
 						} satisfies FileMetadata
 
-						if (this.type === "foreground") {
-							await filenBridge.proxy("editFileMetadata", {
-								uuid: item.uuid,
-								metadata: newFileMetadata
-							})
-						} else {
-							await getSDK().cloud().editFileMetadata({
-								uuid: item.uuid,
-								metadata: newFileMetadata
-							})
-						}
+						await filenBridge.proxy("editFileMetadata", {
+							uuid: item.uuid,
+							metadata: newFileMetadata
+						})
 
 						if (this.type === "foreground") {
 							driveItemsQueryUpdate({
@@ -660,14 +638,9 @@ export class CameraUpload {
 				throw new Error("Aborted")
 			}
 
-			const remotePath =
-				this.type === "foreground"
-					? await filenBridge.proxy("directoryUUIDToPath", {
-							uuid: state.remote.uuid
-					  })
-					: await getSDK().cloud().directoryUUIDToPath({
-							uuid: state.remote.uuid
-					  })
+			const remotePath = await filenBridge.proxy("directoryUUIDToPath", {
+				uuid: state.remote.uuid
+			})
 
 			if (!remotePath) {
 				return
