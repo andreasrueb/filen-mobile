@@ -17,6 +17,8 @@ in {
         pkgs.bundler
         pkgs.cocoapods
         pkgs.cmake
+        # Maestro UI testing (requires JDK)
+        pkgs.temurin-bin-21
     ];
 
     languages.rust = {
@@ -42,7 +44,7 @@ in {
       ln -sf /usr/bin/clang++ "$DEVENV_ROOT/.devenv/bin/clang++"
       ln -sf /usr/bin/ld "$DEVENV_ROOT/.devenv/bin/ld"
       ln -sf /usr/bin/find "$DEVENV_ROOT/.devenv/bin/find"
-      export PATH="$DEVENV_ROOT/.devenv/bin:$PATH"
+      export PATH="$DEVENV_ROOT/.devenv/bin:$HOME/.maestro/bin:$PATH"
 
       unset CC CXX AR
       unset LD LD_FOR_BUILD

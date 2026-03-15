@@ -444,14 +444,124 @@ fileprivate struct FfiConverterString: FfiConverter {
 public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
     
     /**
+     * Change directory color
+     */
+    func changeDirectoryColor(paramsJson: String) async throws 
+    
+    /**
+     * Create a new directory
+     */
+    func createDirectory(paramsJson: String) async throws  -> String
+    
+    /**
+     * Delete directory permanently
+     */
+    func deleteDirectory(paramsJson: String) async throws 
+    
+    /**
+     * Delete file permanently
+     */
+    func deleteFile(paramsJson: String) async throws 
+    
+    /**
+     * Check if directory exists
+     */
+    func directoryExists(paramsJson: String) async throws  -> String
+    
+    /**
+     * Get public link status for a directory
+     */
+    func directoryPublicLinkStatus(paramsJson: String) async throws  -> String
+    
+    /**
+     * Convert directory UUID to path
+     */
+    func directoryUuidToPath(paramsJson: String) async throws  -> String
+    
+    /**
+     * Edit directory metadata (rename)
+     */
+    func editDirectoryMetadata(paramsJson: String) async throws 
+    
+    /**
+     * Edit file metadata
+     */
+    func editFileMetadata(paramsJson: String) async throws 
+    
+    /**
+     * Favorite directory
+     */
+    func favoriteDirectory(paramsJson: String) async throws 
+    
+    /**
+     * Favorite file
+     */
+    func favoriteFile(paramsJson: String) async throws 
+    
+    /**
+     * Fetch cloud items based on view type
+     */
+    func fetchCloudItems(paramsJson: String) async throws  -> String
+    
+    /**
+     * Get directory size
+     */
+    func fetchDirectorySize(paramsJson: String) async throws  -> String
+    
+    /**
+     * Check if file exists
+     */
+    func fileExists(paramsJson: String) async throws  -> String
+    
+    /**
+     * Get public link status for a file
+     */
+    func filePublicLinkStatus(paramsJson: String) async throws  -> String
+    
+    /**
+     * Convert file UUID to path
+     */
+    func fileUuidToPath(paramsJson: String) async throws  -> String
+    
+    /**
      * Send a forgot password email
      */
     func forgotPassword(paramsJson: String) async throws 
     
     /**
+     * Get directory metadata
+     */
+    func getDirectory(paramsJson: String) async throws  -> String
+    
+    /**
+     * Get directory tree
+     */
+    func getDirectoryTree(paramsJson: String) async throws  -> String
+    
+    /**
+     * Get file metadata
+     */
+    func getFile(paramsJson: String) async throws  -> String
+    
+    /**
      * Login with email/password, returns SDK config JSON
      */
     func login(paramsJson: String) async throws  -> String
+    
+    /**
+     * Move directory
+     */
+    func moveDirectory(paramsJson: String) async throws 
+    
+    /**
+     * Move file
+     */
+    func moveFile(paramsJson: String) async throws 
+    
+    /**
+     * Global search
+     */
+    func queryGlobalSearch(paramsJson: String) async throws  -> String
     
     /**
      * Register a new account
@@ -464,9 +574,54 @@ public protocol FilenMobileSdkBridgeProtocol: AnyObject, Sendable {
     func reinitSdk(paramsJson: String) async throws 
     
     /**
+     * Remove shared item (from shared-in list)
+     */
+    func removeSharedItem(paramsJson: String) async throws 
+    
+    /**
+     * Rename directory
+     */
+    func renameDirectory(paramsJson: String) async throws 
+    
+    /**
+     * Rename file
+     */
+    func renameFile(paramsJson: String) async throws 
+    
+    /**
      * Resend the confirmation email
      */
     func resendConfirmation(paramsJson: String) async throws 
+    
+    /**
+     * Restore directory from trash
+     */
+    func restoreDirectory(paramsJson: String) async throws 
+    
+    /**
+     * Restore file from trash
+     */
+    func restoreFile(paramsJson: String) async throws 
+    
+    /**
+     * Stop sharing item
+     */
+    func stopSharingItem(paramsJson: String) async throws 
+    
+    /**
+     * Toggle item public link (enable/disable)
+     */
+    func toggleItemPublicLink(paramsJson: String) async throws  -> String
+    
+    /**
+     * Trash directory
+     */
+    func trashDirectory(paramsJson: String) async throws 
+    
+    /**
+     * Trash file
+     */
+    func trashFile(paramsJson: String) async throws 
     
 }
 open class FilenMobileSdkBridge: FilenMobileSdkBridgeProtocol, @unchecked Sendable {
@@ -529,6 +684,326 @@ public convenience init() {
 
     
     /**
+     * Change directory color
+     */
+open func changeDirectoryColor(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_change_directory_color(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Create a new directory
+     */
+open func createDirectory(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_create_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Delete directory permanently
+     */
+open func deleteDirectory(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_delete_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Delete file permanently
+     */
+open func deleteFile(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_delete_file(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Check if directory exists
+     */
+open func directoryExists(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_directory_exists(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Get public link status for a directory
+     */
+open func directoryPublicLinkStatus(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_directory_public_link_status(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Convert directory UUID to path
+     */
+open func directoryUuidToPath(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_directory_uuid_to_path(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Edit directory metadata (rename)
+     */
+open func editDirectoryMetadata(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_edit_directory_metadata(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Edit file metadata
+     */
+open func editFileMetadata(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_edit_file_metadata(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Favorite directory
+     */
+open func favoriteDirectory(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_favorite_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Favorite file
+     */
+open func favoriteFile(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_favorite_file(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Fetch cloud items based on view type
+     */
+open func fetchCloudItems(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_fetch_cloud_items(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Get directory size
+     */
+open func fetchDirectorySize(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_fetch_directory_size(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Check if file exists
+     */
+open func fileExists(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_file_exists(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Get public link status for a file
+     */
+open func filePublicLinkStatus(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_file_public_link_status(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Convert file UUID to path
+     */
+open func fileUuidToPath(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_file_uuid_to_path(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
      * Send a forgot password email
      */
 open func forgotPassword(paramsJson: String)async throws   {
@@ -549,6 +1024,66 @@ open func forgotPassword(paramsJson: String)async throws   {
 }
     
     /**
+     * Get directory metadata
+     */
+open func getDirectory(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_get_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Get directory tree
+     */
+open func getDirectoryTree(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_get_directory_tree(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Get file metadata
+     */
+open func getFile(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_get_file(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
      * Login with email/password, returns SDK config JSON
      */
 open func login(paramsJson: String)async throws  -> String  {
@@ -556,6 +1091,66 @@ open func login(paramsJson: String)async throws  -> String  {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_login(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Move directory
+     */
+open func moveDirectory(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_move_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Move file
+     */
+open func moveFile(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_move_file(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Global search
+     */
+open func queryGlobalSearch(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_query_global_search(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -609,6 +1204,66 @@ open func reinitSdk(paramsJson: String)async throws   {
 }
     
     /**
+     * Remove shared item (from shared-in list)
+     */
+open func removeSharedItem(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_remove_shared_item(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Rename directory
+     */
+open func renameDirectory(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_rename_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Rename file
+     */
+open func renameFile(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_rename_file(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
      * Resend the confirmation email
      */
 open func resendConfirmation(paramsJson: String)async throws   {
@@ -616,6 +1271,126 @@ open func resendConfirmation(paramsJson: String)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_resend_confirmation(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Restore directory from trash
+     */
+open func restoreDirectory(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_restore_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Restore file from trash
+     */
+open func restoreFile(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_restore_file(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Stop sharing item
+     */
+open func stopSharingItem(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_stop_sharing_item(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Toggle item public link (enable/disable)
+     */
+open func toggleItemPublicLink(paramsJson: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_toggle_item_public_link(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_rust_buffer,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_rust_buffer,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Trash directory
+     */
+open func trashDirectory(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_trash_directory(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(paramsJson)
+                )
+            },
+            pollFunc: ffi_filen_mobile_sdk_bridge_rust_future_poll_void,
+            completeFunc: ffi_filen_mobile_sdk_bridge_rust_future_complete_void,
+            freeFunc: ffi_filen_mobile_sdk_bridge_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBridgeError_lift
+        )
+}
+    
+    /**
+     * Trash file
+     */
+open func trashFile(paramsJson: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_filen_mobile_sdk_bridge_fn_method_filenmobilesdkbridge_trash_file(
                     self.uniffiClonePointer(),
                     FfiConverterString.lower(paramsJson)
                 )
@@ -904,10 +1679,76 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_change_directory_color() != 57965) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_create_directory() != 4528) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_directory() != 61347) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_delete_file() != 22067) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_exists() != 47450) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_public_link_status() != 18328) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_directory_uuid_to_path() != 10846) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_edit_directory_metadata() != 46323) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_edit_file_metadata() != 41835) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_favorite_directory() != 16589) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_favorite_file() != 4468) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_cloud_items() != 19965) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_fetch_directory_size() != 54907) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_file_exists() != 57614) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_file_public_link_status() != 1456) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_file_uuid_to_path() != 23809) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_forgot_password() != 14054) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_get_directory() != 27456) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_get_directory_tree() != 49194) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_get_file() != 64152) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_login() != 60224) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_move_directory() != 37496) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_move_file() != 26038) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_query_global_search() != 372) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_register() != 33778) {
@@ -916,7 +1757,34 @@ private let initializationResult: InitializationResult = {
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_reinit_sdk() != 30650) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_remove_shared_item() != 53409) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_rename_directory() != 17157) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_rename_file() != 39056) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_resend_confirmation() != 12904) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_restore_directory() != 21254) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_restore_file() != 46892) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_stop_sharing_item() != 31791) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_toggle_item_public_link() != 40305) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_trash_directory() != 19981) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_filen_mobile_sdk_bridge_checksum_method_filenmobilesdkbridge_trash_file() != 16017) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_filen_mobile_sdk_bridge_checksum_constructor_filenmobilesdkbridge_new() != 52999) {
