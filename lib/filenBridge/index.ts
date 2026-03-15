@@ -82,6 +82,21 @@ export class FilenBridge {
 		functionName: T,
 		params: Parameters<NodeWorkerHandlers[T]>[0]
 	): Promise<Awaited<ReturnType<NodeWorkerHandlers[T]>>> {
+		// reinitSDK must go to BOTH Rust bridge and Node worker,
+		// since some call sites still use nodeWorker.proxy() directly.
+		if (functionName === "reinitSDK") {
+			this.initialize()
+
+			const paramsJson = JSON.stringify(params ?? {})
+
+			const [result] = await Promise.all([
+				FilenSdkBridgeModule.reinitSDK(paramsJson),
+				nodeWorker.proxy("reinitSDK", params)
+			])
+
+			return result as Awaited<ReturnType<NodeWorkerHandlers[T]>>
+		}
+
 		// Special handling for fetchCloudItems — some types need Node fallback
 		if (functionName === "fetchCloudItems" && params && typeof params === "object" && "of" in params) {
 			const ofType = (params as { of: string }).of
