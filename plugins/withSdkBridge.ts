@@ -43,6 +43,15 @@ async function buildRustForIOS(projectRoot: string, props: IOSRustBuildProps) {
 		}
 	)
 
+	// Remove dylibs so the linker only finds the static .a libraries on iOS
+	for (const t of targets) {
+		const dylib = path.join(fullRustPath, "target", t, "release", `lib${libName}.dylib`)
+
+		if (fs.existsSync(dylib)) {
+			fs.unlinkSync(dylib)
+		}
+	}
+
 	execSync(
 		`cargo run -p uniffi-bindgen-swift -- target/${targets[0]!}/release/lib${libName}.a target/uniffi-xcframework-staging-sdk-bridge --swift-sources --headers --modulemap --module-name ${libName}FFI --modulemap-filename module.modulemap`,
 		{
