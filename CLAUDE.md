@@ -104,6 +104,16 @@ Notable plugins that run during prebuild:
 - **Share Extension** (`expo-share-intent`) — Receive shared files from other apps
 - Both use app group `group.dev.filen.app` for shared state
 
+## Device Builds (Free Apple Developer Account)
+
+After every `prebuild`, the entitlements must be stripped for physical device builds (free accounts can't provision App Groups/iCloud). Replace each file's contents with an empty `<dict/>`:
+
+- `ios/Filen/Filen.entitlements`
+- `ios/FilenShareIntentExtension/ShareExtension.entitlements`
+- `ios/FilenFileProvider/FilenFileProvider.entitlements`
+
+Without this, the build fails with "Provisioning profile doesn't include the App Groups capability." The File Provider and Share Extension won't work without App Groups, but the main app is fine.
+
 ## Code Conventions
 
 - **Styling:** NativeWind (Tailwind CSS for RN) with `className` props. Global CSS in `global.css`.
