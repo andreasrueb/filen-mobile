@@ -60,8 +60,13 @@ export const Video = memo(
 				return item.data.uri
 			}
 
-			if (item.itemType === "cloudItem" && item.data.item.type === "file") {
-				return `http://127.0.0.1:${httpServer.port}/stream?auth=${httpServer.authToken}&file=${encodeURIComponent(
+			if (
+				item.itemType === "cloudItem" &&
+				item.data.item.type === "file" &&
+				httpServer.port &&
+				httpServer.authToken
+			) {
+				const url = `http://127.0.0.1:${httpServer.port}/stream?auth=${httpServer.authToken}&file=${encodeURIComponent(
 					btoa(
 						JSON.stringify({
 							mime: item.data.item.mime,
@@ -75,6 +80,8 @@ export const Video = memo(
 						})
 					)
 				)}`
+
+				return url
 			}
 
 			return null
@@ -84,7 +91,7 @@ export const Video = memo(
 			player.loop = true
 			player.showNowPlayingNotification = false
 			player.keepScreenOnWhilePlaying = true
-			player.timeUpdateEventInterval = 1
+			player.timeUpdateEventInterval = 0.25
 
 			player.play()
 		})
@@ -95,16 +102,11 @@ export const Video = memo(
 					return
 				}
 
-				const seekTo = Math.floor((value / 100) * duration)
-				const seekBy = Math.floor(seekTo - currentTime)
+				const seekTo = Math.max(0, Math.min((value / 100) * duration, duration))
 
-				if (seekTo >= duration || seekTo <= 0 || seekBy <= 0 || seekBy + currentTime >= duration) {
-					return
-				}
-
-				player.seekBy(seekBy)
+				player.currentTime = seekTo
 			},
-			[player, loading, duration, currentTime]
+			[player, loading, duration]
 		)
 
 		const doNotPromptBiometricAuth = useCallback(() => {

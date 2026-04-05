@@ -85,6 +85,10 @@ export class Thumbnails {
 		originalFilePath?: string
 		abortSignal?: AbortSignal
 	}): Promise<string> {
+		// Thumbnail generation disabled — streaming entire videos for a single
+		// frame competes with actual video playback for CDN bandwidth.
+		throw new Error("Thumbnail generation disabled.")
+
 		if (item.type !== "file") {
 			throw new Error("Item is not of type file.")
 		}
