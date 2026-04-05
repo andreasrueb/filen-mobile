@@ -76,7 +76,7 @@ export const Filen = memo(({ link }: { link: string }) => {
 	if (query.data.type === "directory") {
 		return (
 			<Directory
-				info={query.data}
+				info={query.data as PublicLinkInfo}
 				link={link}
 				parsedLink={publicLink}
 			/>

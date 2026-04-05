@@ -141,7 +141,7 @@ export class NotesService {
 		}
 
 		try {
-			const duplicatedNote = await filenBridge.duplicateNote(note.uuid)
+			const duplicatedNote = (await filenBridge.duplicateNote(note.uuid)) as unknown as Note
 			const newUUID = duplicatedNote.uuid
 
 			notesQueryUpdate({
@@ -188,7 +188,8 @@ export class NotesService {
 		}
 
 		try {
-			let { content } = await filenBridge.fetchNoteContent(note.uuid)
+			const { content: rawContent } = await filenBridge.fetchNoteContent(note.uuid)
+		let content = rawContent ?? ""
 
 			if (note.type === "rich") {
 				content = striptags(content.split("<p><br></p>").join("\n"))
@@ -643,14 +644,14 @@ export class NotesService {
 		}
 
 		try {
-			const createdNote = await filenBridge.createNote(title)
+			const createdNote = (await filenBridge.createNote(title)) as unknown as Note
 			const uuid = createdNote.uuid
 
 			if (type) {
 				await filenBridge.changeNoteType(uuid, type)
 			}
 
-			const notes = await filenBridge.fetchNotes()
+			const notes = (await filenBridge.fetchNotes()) as unknown as Note[]
 
 			notesQueryUpdate({
 				updater: () => notes

@@ -299,8 +299,8 @@ export class CameraUpload {
 				type: "remote",
 				name: file.name,
 				uuid: file.uuid,
-				creation: file.creation ?? file.lastModified ?? file.timestamp,
-				lastModified: file.lastModified,
+				creation: file.creation ?? file.lastModified ?? file.timestamp ?? 0,
+				lastModified: file.lastModified ?? 0,
 				path,
 				pathWithAlbum: this.normalizePath(treeItemPath)
 			}

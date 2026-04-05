@@ -29,7 +29,14 @@ export type UseItemPublicLinkStatusQuery =
 
 export async function fetchData(params: UseItemPublicLinkStatusQueryParams): Promise<UseItemPublicLinkStatusQuery> {
 	if (params.item.type === "file") {
-		const result = await filenBridge.filePublicLinkStatus(params.item.uuid)
+		const result = (await filenBridge.filePublicLinkStatus(params.item.uuid)) as {
+			enabled: boolean
+			uuid?: string
+			password: string | null
+			expiration: number | null
+			downloadBtn: number
+			expirationText: string | null
+		}
 
 		if (!result.enabled || !result.uuid) {
 			return {
@@ -49,7 +56,15 @@ export async function fetchData(params: UseItemPublicLinkStatusQueryParams): Pro
 			key: params.item.key
 		}
 	} else {
-		const result = await filenBridge.directoryPublicLinkStatus(params.item.uuid)
+		const result = (await filenBridge.directoryPublicLinkStatus(params.item.uuid)) as {
+			exists: boolean
+			uuid?: string
+			key: string
+			password: string | null
+			expiration: number | null
+			downloadBtn: number
+			expirationText: string | null
+		}
 
 		if (!result.exists || !result.uuid) {
 			return {

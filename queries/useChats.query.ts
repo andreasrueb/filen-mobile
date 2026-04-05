@@ -8,7 +8,7 @@ import type { ChatConversation } from "@filen/sdk/dist/types/api/v3/chat/convers
 export const BASE_QUERY_KEY = "useChatsQuery"
 
 export async function fetchData(): Promise<ChatConversation[]> {
-	return await filenBridge.fetchChats()
+	return (await filenBridge.fetchChats()) as unknown as ChatConversation[]
 }
 
 export function useChatsQuery(

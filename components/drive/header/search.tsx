@@ -154,7 +154,7 @@ export const Search = memo(({ queryParams }: { queryParams: FetchCloudItemsParam
 		try {
 			const result = await filenBridge.queryGlobalSearch(searchValue)
 
-			setResults(result)
+			setResults(result as unknown as SearchFindItemDecrypted[])
 		} catch (e) {
 			console.error(e)
 

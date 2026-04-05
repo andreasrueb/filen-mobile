@@ -100,10 +100,10 @@ export class Upload {
 			}
 
 			const wantsToDeleteAfterUpload = params.deleteAfterUpload ?? false
-			const item = await filenBridge.uploadFile({
+			const item = (await filenBridge.uploadFile({
 				...params,
 				deleteAfterUpload: false
-			})
+			})) as unknown as DriveCloudItem
 
 			if (!params.disableThumbnailGeneration) {
 				await thumbnails
@@ -142,10 +142,10 @@ export class Upload {
 			}
 
 			const wantsToDeleteAfterUpload = params.deleteAfterUpload ?? false
-			const item = await filenBridge.uploadFile({
+			const item = (await filenBridge.uploadFile({
 				...params,
 				deleteAfterUpload: false
-			})
+			})) as unknown as DriveCloudItem
 
 			if (!params.disableThumbnailGeneration) {
 				await thumbnails

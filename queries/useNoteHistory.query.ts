@@ -12,7 +12,7 @@ export type UseNoteHistoryQueryParams = {
 }
 
 export async function fetchData(params: UseNoteHistoryQueryParams): Promise<NoteHistory[]> {
-	return await filenBridge.fetchNoteHistory(params.uuid)
+	return (await filenBridge.fetchNoteHistory(params.uuid)) as unknown as NoteHistory[]
 }
 
 export function useNoteHistoryQuery(

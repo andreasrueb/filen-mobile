@@ -14,8 +14,8 @@ export async function fetchData(): Promise<{ incoming: ContactRequest[]; outgoin
 	])
 
 	return {
-		incoming,
-		outgoing
+		incoming: incoming as unknown as ContactRequest[],
+		outgoing: outgoing as unknown as ContactRequest[]
 	}
 }
 

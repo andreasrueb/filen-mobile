@@ -93,7 +93,7 @@ export const Directory = memo(
 						className="font-normal text-xs text-muted-foreground shrink-0"
 						numberOfLines={1}
 					>
-						{formatBytes(query.data.size)}
+						{formatBytes((query.data as { size: number }).size)}
 					</Text>
 					<Icon
 						name="chevron-right"

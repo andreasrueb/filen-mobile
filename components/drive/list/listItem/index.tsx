@@ -150,7 +150,7 @@ export const ListItem = memo(
 			try {
 				const parent = await filenBridge.getDirectory(info.item.item.parent)
 
-				cache.directoryUUIDToName.set(info.item.item.parent, parent.metadataDecrypted.name)
+				cache.directoryUUIDToName.set(info.item.item.parent, parent.name)
 
 				await hideSearchBarWithDelay(true)
 

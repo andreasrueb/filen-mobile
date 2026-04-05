@@ -496,7 +496,21 @@ export const Input = memo(
 				if (editMessageCopied) {
 					await filenBridge.editChatMessage(chat.uuid, uuid, valueCopied)
 				} else {
-					await filenBridge.sendChatMessage(chat.uuid, valueCopied, replyToMessageCopied ? replyToMessageCopied.uuid : "", uuid)
+					await filenBridge.sendChatMessage(
+							chat.uuid,
+							valueCopied,
+							replyToMessageCopied
+								? {
+										uuid: replyToMessageCopied.uuid,
+										senderId: replyToMessageCopied.senderId,
+										senderEmail: replyToMessageCopied.senderEmail,
+										senderAvatar: replyToMessageCopied.senderAvatar ?? null,
+										senderNickName: replyToMessageCopied.senderNickName ?? "",
+										message: replyToMessageCopied.message
+								  }
+								: undefined,
+							uuid
+						)
 				}
 
 				await Promise.all([

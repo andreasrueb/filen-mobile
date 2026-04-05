@@ -8,7 +8,7 @@ import type { UserSettingsResponse } from "@filen/sdk/dist/types/api/v3/user/set
 export const BASE_QUERY_KEY = "useAccountQuery"
 
 export async function fetchData(): Promise<{ account: UserAccountResponse; settings: UserSettingsResponse }> {
-	return await filenBridge.fetchAccount()
+	return (await filenBridge.fetchAccount()) as { account: UserAccountResponse; settings: UserSettingsResponse }
 }
 
 export function useAccountQuery(

@@ -184,7 +184,11 @@ export class AuthService {
 		}
 
 		try {
-			const sdkConfig = await filenBridge.login(email, password, twoFactorCode ?? "XXXXXX")
+			const sdkConfig = (await filenBridge.login(
+				email,
+				password,
+				twoFactorCode ?? "XXXXXX"
+			)) as unknown as Required<FilenSDKConfig>
 
 			await this.setup({
 				isAuthed: true,

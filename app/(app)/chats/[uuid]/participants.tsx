@@ -17,6 +17,7 @@ import Menu from "@/components/chats/chat/participants/menu"
 import useChatsQuery, { chatsQueryUpdate } from "@/queries/useChats.query"
 import { validate as validateUUID } from "uuid"
 import filenBridge from "@/lib/filenBridge"
+import type { ChatContact } from "@/modules/filen-sdk-bridge/types"
 import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import alerts from "@/lib/alerts"
 import RequireInternet from "@/components/requireInternet"
@@ -200,7 +201,7 @@ export default function Participants() {
 		try {
 			const addedParticipants = await Promise.all(
 				filtered.map(async contact => {
-					await filenBridge.addChatParticipant(chat.uuid, contact)
+					await filenBridge.addChatParticipant(chat.uuid, contact as unknown as ChatContact)
 
 					return {
 						userId: contact.userId,

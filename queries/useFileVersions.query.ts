@@ -12,7 +12,7 @@ export type UseFileVersionsQueryParams = {
 }
 
 export async function fetchData(params: UseFileVersionsQueryParams): Promise<FileVersionsResponse> {
-	return await filenBridge.fetchFileVersions(params)
+	return (await filenBridge.fetchFileVersions(params)) as FileVersionsResponse
 }
 
 export function useFileVersionsQuery(

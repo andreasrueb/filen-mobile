@@ -32,18 +32,18 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkInfoQueryPara
 			}
 		} as const
 	} else {
-		const password = await filenBridge.filePublicLinkHasPassword({
+		const password = (await filenBridge.filePublicLinkHasPassword({
 			uuid: params.publicLink.uuid
-		})
+		})) as { hasPassword: boolean }
 
 		if (password.hasPassword) {
 			return null
 		}
 
-		const info = await filenBridge.filePublicLinkInfo({
+		const info = (await filenBridge.filePublicLinkInfo({
 			uuid: params.publicLink.uuid,
 			key: params.publicLink.key
-		})
+		})) as { name: string; size: number; mime: string; [key: string]: unknown }
 
 		const previewType = getPreviewType(info.name)
 

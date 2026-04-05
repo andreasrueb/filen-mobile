@@ -119,7 +119,7 @@ export const Messages = memo(({ chat, isPreview, inputHeight }: { chat: ChatConv
 				params: {
 					conversation: chat.uuid
 				},
-				updater: prev => [...fetched.filter(m => !existingUUIDs.includes(m.uuid)), ...prev]
+				updater: prev => [...(fetched as unknown as ChatMessage[]).filter(m => !existingUUIDs.includes(m.uuid)), ...prev]
 			})
 		} catch (e) {
 			console.error(e)
