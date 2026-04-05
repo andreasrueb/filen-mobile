@@ -12,6 +12,7 @@ import assets from "./assets"
 import download from "@/lib/download"
 import { getAudioMetadata } from "@missingcore/audio-metadata"
 import pathModule from "path"
+import filenBridge from "@/lib/filenBridge"
 
 export type AudioProTrackExtended = AudioProTrack & {
 	file: {
@@ -588,12 +589,24 @@ export class TrackPlayer {
 		}
 	}
 
-	public async parseAudioMetadata({ uri, uuid }: { uri: string; uuid: string }): Promise<TrackMetadata | null> {
+	public async parseAudioMetadata({
+		uri,
+		uuid,
+		cacheOnly
+	}: {
+		uri: string
+		uuid: string
+		cacheOnly?: boolean
+	}): Promise<TrackMetadata | null> {
 		try {
 			const existingMetadata = mmkvInstance.getString(this.getTrackMetadataKeyFromUUID(uuid))
 
 			if (existingMetadata) {
 				return JSON.parse(existingMetadata) as TrackMetadata
+			}
+
+			if (cacheOnly) {
+				return null
 			}
 
 			const file = new FileSystem.File(normalizeFilePathForExpo(uri))
@@ -715,6 +728,54 @@ export class TrackPlayer {
 		useTrackPlayerStore.getState().setLoadingTrack(true)
 
 		try {
+			const fallbackPicture = assets.uri.images.audio_fallback()
+
+			if (!fallbackPicture) {
+				throw new Error("Fallback picture URI is not available")
+			}
+
+			// Check for cached metadata first (from a previous play of this track)
+			const cachedMetadata = await this.parseAudioMetadata({
+				uri: "",
+				uuid: track.file.uuid,
+				cacheOnly: true
+			})
+
+			// Try HTTP streaming first — starts playback in ~1-2 seconds instead
+			// of waiting for the full file download (which can take minutes).
+			const streamUrl = filenBridge.buildStreamURL({
+				mime: track.file.mime,
+				size: track.file.size,
+				uuid: track.file.uuid,
+				bucket: track.file.bucket,
+				key: track.file.key,
+				version: track.file.version,
+				chunks: track.file.chunks,
+				region: track.file.region
+			})
+
+			if (streamUrl) {
+				const loadedTrack: AudioProTrackExtended = {
+					...track,
+					url: streamUrl,
+					title: cachedMetadata?.title ?? track.title,
+					artist: cachedMetadata?.artist ?? track.artist,
+					album: cachedMetadata?.album ?? track.album,
+					artwork:
+						cachedMetadata?.picture && new FileSystem.File(normalizeFilePathForExpo(cachedMetadata.picture)).exists
+							? normalizeFilePathForExpo(cachedMetadata.picture)
+							: normalizeFilePathForExpo(fallbackPicture)
+				}
+
+				// Parse metadata in background (download file for ID3 tags, update queue)
+				if (!cachedMetadata) {
+					this.fetchMetadataInBackground(track, loadedTrack)
+				}
+
+				return loadedTrack
+			}
+
+			// Fallback: download entire file first (HTTP server unavailable)
 			const destination = new FileSystem.File(
 				pathModule.posix.join(paths.trackPlayer(), `${track.file.uuid}${pathModule.posix.extname(track.file.name)}`)
 			)
@@ -741,12 +802,6 @@ export class TrackPlayer {
 
 			await this.clearActiveStorage()
 
-			const fallbackPicture = assets.uri.images.audio_fallback()
-
-			if (!fallbackPicture) {
-				throw new Error("Fallback picture URI is not available")
-			}
-
 			return {
 				...track,
 				url: normalizeFilePathForExpo(destination.uri),
@@ -763,6 +818,46 @@ export class TrackPlayer {
 
 			useTrackPlayerStore.getState().setLoadingTrack(false)
 		}
+	}
+
+	/**
+	 * Download the file in the background and parse metadata.
+	 * Updates the queue and now-playing display once metadata is available.
+	 */
+	private fetchMetadataInBackground(originalTrack: AudioProTrackExtended, _loadedTrack: AudioProTrackExtended): void {
+		const uuid = originalTrack.file.uuid
+
+		// Fire-and-forget: download for metadata parsing
+		;(async () => {
+			try {
+				const destination = new FileSystem.File(
+					pathModule.posix.join(paths.trackPlayer(), `${uuid}${pathModule.posix.extname(originalTrack.file.name)}`)
+				)
+
+				if (!destination.exists) {
+					await download.file.background({
+						id: randomUUID(),
+						uuid: originalTrack.file.uuid,
+						bucket: originalTrack.file.bucket,
+						region: originalTrack.file.region,
+						chunks: originalTrack.file.chunks,
+						version: originalTrack.file.version as FileEncryptionVersion,
+						key: originalTrack.file.key,
+						destination: destination.uri,
+						size: originalTrack.file.size,
+						name: originalTrack.file.name
+					})
+				}
+
+				// Parse metadata — this updates the MMKV cache and queue
+				await this.parseAudioMetadata({
+					uri: destination.uri,
+					uuid
+				})
+			} catch (e) {
+				console.error("[TrackPlayer] Background metadata fetch failed:", e)
+			}
+		})()
 	}
 }
 
