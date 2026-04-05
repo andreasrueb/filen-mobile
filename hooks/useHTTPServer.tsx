@@ -64,7 +64,7 @@ export default function useHTTPServer() {
 				httpAuthToken: filenBridge.httpAuthToken,
 				ready: filenBridge.ready
 			})
-		}, 500)
+		}, 2500)
 
 		const appStateListener = AppState.addEventListener("change", nextAppState => {
 			if (nextAppState !== "active") {
