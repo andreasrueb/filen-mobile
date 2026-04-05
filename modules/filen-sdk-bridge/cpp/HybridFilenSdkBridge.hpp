@@ -43,6 +43,7 @@ class JsonBuilder {
 
     void sep() { if (!first_) ss_ << ','; first_ = false; }
 
+public:
     static std::string escape(const std::string& s) {
         std::string r;
         r.reserve(s.size());
@@ -348,7 +349,7 @@ private:
     }
     std::shared_ptr<Promise<void>> editDirectoryMetadata(const std::string& uuid, const std::string& metadataName) {
         return callVoid(filen_bridge_edit_directory_metadata,
-            std::string("{\"uuid\":\"") + JsonBuilder::escapePublic(uuid) + "\",\"metadata\":{\"name\":\"" + JsonBuilder::escapePublic(metadataName) + "\"}}");
+            std::string("{\"uuid\":\"") + JsonBuilder::escape(uuid) + "\",\"metadata\":{\"name\":\"" + JsonBuilder::escape(metadataName) + "\"}}");
     }
     std::shared_ptr<Promise<std::string>> fetchDirectorySize(const std::string& uuid) {
         return callString(filen_bridge_fetch_directory_size, JsonBuilder().str("uuid", uuid).build());
@@ -389,9 +390,9 @@ private:
         return callVoid(filen_bridge_favorite_file, JsonBuilder().str("uuid", uuid).boolean("favorite", favorite).build());
     }
     std::shared_ptr<Promise<void>> editFileMetadata(const std::string& uuid, const std::string& metadataName, std::optional<std::string> metadataMime) {
-        std::string metaObj = "{\"name\":\"" + JsonBuilder::escapePublic(metadataName) + "\"";
+        std::string metaObj = "{\"name\":\"" + JsonBuilder::escape(metadataName) + "\"";
         if (metadataMime.has_value()) {
-            metaObj += ",\"mime\":\"" + JsonBuilder::escapePublic(*metadataMime) + "\"";
+            metaObj += ",\"mime\":\"" + JsonBuilder::escape(*metadataMime) + "\"";
         }
         metaObj += "}";
         return callVoid(filen_bridge_edit_file_metadata, JsonBuilder().str("uuid", uuid).raw("metadata", metaObj).build());
@@ -409,7 +410,7 @@ private:
     }
     std::shared_ptr<Promise<std::string>> queryGlobalSearch(const std::string& query) {
         // Rust expects either a bare JSON string or the raw value
-        return callString(filen_bridge_query_global_search, "\"" + JsonBuilder::escapePublic(query) + "\"");
+        return callString(filen_bridge_query_global_search, "\"" + JsonBuilder::escape(query) + "\"");
     }
 
     // Cloud: Public links & sharing (complex params — keep JSON)
@@ -654,32 +655,6 @@ private:
     std::shared_ptr<Promise<std::string>> restartHTTPServer() { return callString(filen_bridge_restart_http_server, "{}"); }
     std::shared_ptr<Promise<std::string>> httpStatus() { return callString(filen_bridge_http_status, "{}"); }
 
-public:
-    // Public static escape helper for nested JSON construction
-    static std::string escapePublic(const std::string& s) {
-        std::string r;
-        r.reserve(s.size());
-        for (char c : s) {
-            switch (c) {
-                case '"':  r += "\\\""; break;
-                case '\\': r += "\\\\"; break;
-                case '\b': r += "\\b"; break;
-                case '\f': r += "\\f"; break;
-                case '\n': r += "\\n"; break;
-                case '\r': r += "\\r"; break;
-                case '\t': r += "\\t"; break;
-                default:
-                    if (static_cast<unsigned char>(c) < 0x20) {
-                        char buf[8];
-                        snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned char>(c));
-                        r += buf;
-                    } else {
-                        r += c;
-                    }
-            }
-        }
-        return r;
-    }
 
 private:
     std::shared_ptr<FilenMobileSdkBridge> bridge_;
