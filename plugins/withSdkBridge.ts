@@ -53,15 +53,25 @@ async function buildRustForIOS(projectRoot: string, props: IOSRustBuildProps) {
 		}
 	}
 
-	// 3. Generate C header via cbindgen
+	// 3. Ensure the hand-written C FFI header exists.
+	// The header lives at filen-rs/target/ffi-headers/<libName>_ffi.h and is
+	// checked into the repo. cbindgen cannot handle the hyper generics in the
+	// crate, so we maintain the header manually (it mirrors ffi.rs exactly).
 	const ffiHeaderDir = path.join(fullRustPath, "target", "ffi-headers")
+	const ffiHeader = path.join(ffiHeaderDir, `${libName}_ffi.h`)
 
 	fs.mkdirSync(ffiHeaderDir, { recursive: true })
 
-	execSync(`cbindgen --crate ${crateName} --output ${ffiHeaderDir}/${libName}_ffi.h`, {
-		cwd: path.join(fullRustPath, crateName),
-		stdio: "inherit"
-	})
+	if (!fs.existsSync(ffiHeader)) {
+		// Copy the checked-in header from the crate directory
+		const srcHeader = path.join(fullRustPath, crateName, "ffi-header", `${libName}_ffi.h`)
+
+		if (fs.existsSync(srcHeader)) {
+			fs.copyFileSync(srcHeader, ffiHeader)
+		} else {
+			throw new Error(`[withSdkBridge] FFI header not found at ${ffiHeader} or ${srcHeader}`)
+		}
+	}
 }
 
 const withSdkBridgeIOS: ConfigPlugin<SdkBridgePluginProps> = (config, props) => {
