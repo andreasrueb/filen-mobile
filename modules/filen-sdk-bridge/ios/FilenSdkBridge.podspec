@@ -17,15 +17,15 @@ Pod::Spec.new do |s|
 
   staging_dir = '$(PODS_TARGET_SRCROOT)/../../../filen-rs/target/uniffi-xcframework-staging-sdk-bridge'
 
-  # Pod target: modulemap for Swift compilation
   s.pod_target_xcconfig = {
     'SWIFT_INCLUDE_PATHS' => staging_dir,
     'HEADER_SEARCH_PATHS' => "$(inherited) #{staging_dir}"
   }
 
-  # User target (main app): link the Rust static library
+  # -lfilen_mobile_sdk_bridge tells the linker to find the Rust static library.
+  # The SDK-conditional LIBRARY_SEARCH_PATHS are injected by the Podfile post_install
+  # hook so the correct platform slice (device vs simulator) is always used.
   s.user_target_xcconfig = {
-    'LIBRARY_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../../filen-rs/target/aarch64-apple-ios-sim/release" "${PODS_ROOT}/../../filen-rs/target/aarch64-apple-ios/release"',
     'OTHER_LDFLAGS' => '$(inherited) -lfilen_mobile_sdk_bridge'
   }
 end
