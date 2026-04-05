@@ -74,14 +74,69 @@ async function buildRustForIOS(projectRoot: string, props: IOSRustBuildProps) {
 	}
 }
 
+/**
+ * Inject a post_install snippet into the Podfile that writes SDK-conditional
+ * LIBRARY_SEARCH_PATHS into the Pods-Filen xcconfig files.
+ * This runs inside `pod install` so the Pods directory already exists.
+ */
+function injectPodfileSearchPaths(iosDir: string, targets: string[]) {
+	const podfilePath = path.join(iosDir, "Podfile")
+	let podfile = fs.readFileSync(podfilePath, "utf-8")
+
+	if (podfile.includes("# [withSdkBridge] LIBRARY_SEARCH_PATHS")) {
+		return // Already injected
+	}
+
+	// Build the Ruby snippet that patches xcconfig files
+	const lines: string[] = []
+
+	for (const t of targets) {
+		const sdk = t.includes("-sim") ? "iphonesimulator" : "iphoneos"
+		lines.push(
+			`          f.puts "LIBRARY_SEARCH_PATHS[sdk=${sdk}*] = $(inherited) \\"#{rust_dir}/${t}/release\\""`
+		)
+	}
+
+	const snippet = `
+    # [withSdkBridge] LIBRARY_SEARCH_PATHS for Rust static libraries
+    rust_dir = "\${PODS_ROOT}/../../filen-rs/target"
+    Dir.glob(File.join(__dir__, 'Pods', 'Target Support Files', 'Pods-Filen', '*.xcconfig')).each do |xcconfig_path|
+      content = File.read(xcconfig_path)
+      unless content.include?('aarch64-apple-ios')
+        File.open(xcconfig_path, 'a') do |f|
+          f.puts ''
+${lines.join("\n")}
+        end
+      end
+    end`
+
+	// Insert snippet just before the closing `end` of the post_install block.
+	// We look for the pattern "  end\nend" which closes post_install + target.
+	const marker = "  end\nend"
+	const idx = podfile.lastIndexOf(marker)
+
+	if (idx === -1) {
+		console.warn("[withSdkBridge] Could not find post_install end in Podfile")
+
+		return
+	}
+
+	podfile = podfile.slice(0, idx) + snippet + "\n" + podfile.slice(idx)
+
+	fs.writeFileSync(podfilePath, podfile)
+}
+
 const withSdkBridgeIOS: ConfigPlugin<SdkBridgePluginProps> = (config, props) => {
 	const { ios } = props
 
-	// Build Rust during prebuild
+	// Build Rust and inject Podfile search paths during prebuild
 	config = withDangerousMod(config, [
 		"ios",
 		async config => {
 			await buildRustForIOS(config.modRequest.projectRoot, ios)
+
+			// Inject LIBRARY_SEARCH_PATHS into Podfile (runs inside pod install)
+			injectPodfileSearchPaths(config.modRequest.platformProjectRoot, ios.targets)
 
 			return config
 		}
