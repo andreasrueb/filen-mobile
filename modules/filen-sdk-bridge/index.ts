@@ -151,19 +151,4 @@ export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	httpStatus(paramsJson: string): Promise<string>
 }
 
-let instance: FilenSdkBridgeModuleType | null = null
-
-function getBridge(): FilenSdkBridgeModuleType {
-	if (!instance) {
-		instance = NitroModules.createHybridObject<FilenSdkBridgeModuleType>("FilenSdkBridge")
-	}
-
-	return instance
-}
-
-export default new Proxy({} as FilenSdkBridgeModuleType, {
-	get(_target, prop) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return (getBridge() as any)[prop]
-	}
-})
+export default NitroModules.createHybridObject<FilenSdkBridgeModuleType>("FilenSdkBridge")
