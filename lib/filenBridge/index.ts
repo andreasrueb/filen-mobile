@@ -182,8 +182,9 @@ export class FilenBridge {
 	// ── Cloud: Listing & search ─────────────────────────────────────
 
 	public async fetchCloudItems(of: string, parent: string, receiverId: number): Promise<BridgeCloudItem[]> {
+		// Returns native JSI objects (no JSON.parse — parsed on C++ background thread)
 		const result = await FilenSdkBridgeModule.fetchCloudItems(of, parent, receiverId)
-		return JSON.parse(result) as BridgeCloudItem[]
+		return result as unknown as BridgeCloudItem[]
 	}
 
 	public async queryGlobalSearch(query: string): Promise<BridgeCloudItem[]> {
@@ -378,8 +379,9 @@ export class FilenBridge {
 	}
 
 	public async fetchChatMessages(conversation: string, timestamp?: number): Promise<ChatMessageDto[]> {
+		// Returns native JSI objects (no JSON.parse — parsed on C++ background thread)
 		const result = await FilenSdkBridgeModule.fetchChatMessages(conversation, timestamp ?? 0)
-		return JSON.parse(result) as ChatMessageDto[]
+		return result as unknown as ChatMessageDto[]
 	}
 
 	public async fetchChatsLastFocus(): Promise<ChatLastFocusEntry[]> {
@@ -623,8 +625,9 @@ export class FilenBridge {
 	}
 
 	public async fetchTransfers(): Promise<FetchTransfersResult> {
+		// Returns native JSI objects (no JSON.parse — parsed on C++ background thread)
 		const result = await FilenSdkBridgeModule.fetchTransfers()
-		return JSON.parse(result) as FetchTransfersResult
+		return result as unknown as FetchTransfersResult
 	}
 
 	// ── HTTP Server ─────────────────────────────────────────────────

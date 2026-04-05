@@ -11,6 +11,9 @@
 // Rust FFI header
 #include "filen_mobile_sdk_bridge_ffi.h"
 
+// JSON → Nitro-type parser (for typed returns)
+#include "JsonToJsi.hpp"
+
 namespace margelo::nitro::filensdk {
 
 using namespace margelo::nitro;
@@ -299,6 +302,29 @@ private:
         });
     }
 
+    // Helper: call Rust FFI, parse JSON result into a ResultObj on background thread.
+    // Nitro auto-converts the map/variant types to JSI on the JS thread (fast).
+    std::shared_ptr<Promise<ResultObj>> callResultObj(FfiFn fn, const std::string& paramsJson) {
+        auto b = bridge_;
+        return Promise<ResultObj>::async([b, fn, paramsJson]() -> ResultObj {
+            FfiResultGuard g{fn(b.get(), paramsJson.c_str())};
+            if (g.r.error) throw std::runtime_error(std::string(g.r.error));
+            std::string json(g.r.data ? g.r.data : "{}");
+            return JsonParser(json).parseResultObject();
+        });
+    }
+
+    // Helper: call Rust FFI, parse JSON array of flat objects on background thread.
+    std::shared_ptr<Promise<ObjArray>> callArray(FfiFn fn, const std::string& paramsJson) {
+        auto b = bridge_;
+        return Promise<ObjArray>::async([b, fn, paramsJson]() -> ObjArray {
+            FfiResultGuard g{fn(b.get(), paramsJson.c_str())};
+            if (g.r.error) throw std::runtime_error(std::string(g.r.error));
+            std::string json(g.r.data ? g.r.data : "[]");
+            return JsonParser(json).parseArray();
+        });
+    }
+
     // ── Method implementations ───────────────────���──────────────────────
 
     // Auth
@@ -405,8 +431,8 @@ private:
     }
 
     // Cloud: Listing
-    std::shared_ptr<Promise<std::string>> fetchCloudItems(const std::string& of, const std::string& parent, double receiverId) {
-        return callString(filen_bridge_fetch_cloud_items, JsonBuilder().str("of", of).str("parent", parent).num("receiverId", receiverId).build());
+    std::shared_ptr<Promise<ObjArray>> fetchCloudItems(const std::string& of, const std::string& parent, double receiverId) {
+        return callArray(filen_bridge_fetch_cloud_items, JsonBuilder().str("of", of).str("parent", parent).num("receiverId", receiverId).build());
     }
     std::shared_ptr<Promise<std::string>> queryGlobalSearch(const std::string& query) {
         // Rust expects either a bare JSON string or the raw value
@@ -502,8 +528,8 @@ private:
     }
     std::shared_ptr<Promise<void>> addChatParticipant(const std::string& p) { return callVoid(filen_bridge_add_chat_participant, p); }
     std::shared_ptr<Promise<void>> removeChatParticipant(const std::string& p) { return callVoid(filen_bridge_remove_chat_participant, p); }
-    std::shared_ptr<Promise<std::string>> fetchChatMessages(const std::string& conversation, double timestamp) {
-        return callString(filen_bridge_fetch_chat_messages, JsonBuilder().str("conversation", conversation).num("timestamp", timestamp).build());
+    std::shared_ptr<Promise<ObjArray>> fetchChatMessages(const std::string& conversation, double timestamp) {
+        return callArray(filen_bridge_fetch_chat_messages, JsonBuilder().str("conversation", conversation).num("timestamp", timestamp).build());
     }
     std::shared_ptr<Promise<std::string>> fetchChatsLastFocus() { return callString(filen_bridge_fetch_chats_last_focus, "{}"); }
     std::shared_ptr<Promise<void>> updateChatsLastFocus(const std::string& p) { return callVoid(filen_bridge_update_chats_last_focus, p); }
@@ -647,7 +673,7 @@ private:
     std::shared_ptr<Promise<std::string>> transferAction(const std::string& id, const std::string& action) {
         return callString(filen_bridge_transfer_action, JsonBuilder().str("id", id).str("action", action).build());
     }
-    std::shared_ptr<Promise<std::string>> fetchTransfers() { return callString(filen_bridge_fetch_transfers, "{}"); }
+    std::shared_ptr<Promise<ResultObj>> fetchTransfers() { return callResultObj(filen_bridge_fetch_transfers, "{}"); }
 
     // HTTP Server
     std::shared_ptr<Promise<std::string>> startHttpServer() { return callString(filen_bridge_start_http_server, "{}"); }

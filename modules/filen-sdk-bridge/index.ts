@@ -1,5 +1,12 @@
 import { NitroModules, type HybridObject } from "react-native-nitro-modules"
 
+// Nitro-native return types (C++ maps/vectors auto-converted to JSI, no JSON.parse)
+// Null JSON values are omitted → undefined in JS (Nitro doesn't support nullptr_t)
+type NativeScalar = string | number | boolean
+type NativeFlatObj = Record<string, NativeScalar | undefined>
+type NativeObjArray = NativeFlatObj[]
+type NativeResultObj = Record<string, NativeScalar | NativeObjArray | undefined>
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	// Auth
@@ -37,7 +44,7 @@ export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	fileUUIDToPath(uuid: string): Promise<string>
 	filePublicLinkStatus(uuid: string): Promise<string>
 	// Cloud: Listing & search
-	fetchCloudItems(of: string, parent: string, receiverId: number): Promise<string>
+	fetchCloudItems(of: string, parent: string, receiverId: number): Promise<NativeObjArray>
 	queryGlobalSearch(query: string): Promise<string>
 	// Cloud: Public links
 	toggleItemPublicLink(paramsJson: string): Promise<string>
@@ -84,7 +91,7 @@ export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	chatUnreadCount(uuid: string): Promise<string>
 	addChatParticipant(paramsJson: string): Promise<void>
 	removeChatParticipant(paramsJson: string): Promise<void>
-	fetchChatMessages(conversation: string, timestamp: number): Promise<string>
+	fetchChatMessages(conversation: string, timestamp: number): Promise<NativeObjArray>
 	fetchChatsLastFocus(): Promise<string>
 	updateChatsLastFocus(paramsJson: string): Promise<void>
 	muteChat(conversation: string, mute: boolean): Promise<void>
@@ -143,7 +150,7 @@ export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	uploadDirectory(paramsJson: string): Promise<void>
 	downloadDirectory(paramsJson: string): Promise<void>
 	transferAction(id: string, action: string): Promise<string>
-	fetchTransfers(): Promise<string>
+	fetchTransfers(): Promise<NativeResultObj>
 	// HTTP Server
 	startHttpServer(): Promise<string>
 	stopHttpServer(): Promise<void>
