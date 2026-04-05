@@ -48,17 +48,37 @@ export default function useHTTPServer() {
 	)
 
 	useEffect(() => {
+		// Poll until the HTTP server is ready (port + token available).
+		// This handles the case where the hook mounts before filenBridge.start() completes.
+		const interval = setInterval(() => {
+			const key = `${filenBridge.httpServerPort}:${filenBridge.httpAuthToken}:${filenBridge.ready}`
+
+			if (prev.current === key) {
+				return
+			}
+
+			prev.current = key
+
+			setInfo({
+				httpServerPort: filenBridge.httpServerPort,
+				httpAuthToken: filenBridge.httpAuthToken,
+				ready: filenBridge.ready
+			})
+		}, 500)
+
 		const appStateListener = AppState.addEventListener("change", nextAppState => {
 			if (nextAppState !== "active") {
 				return
 			}
 
 			setTimeout(() => {
-				if (prev.current === `${filenBridge.httpServerPort}:${filenBridge.httpAuthToken}:${filenBridge.ready}`) {
+				const key = `${filenBridge.httpServerPort}:${filenBridge.httpAuthToken}:${filenBridge.ready}`
+
+				if (prev.current === key) {
 					return
 				}
 
-				prev.current = `${filenBridge.httpServerPort}:${filenBridge.httpAuthToken}:${filenBridge.ready}`
+				prev.current = key
 
 				setInfo({
 					httpServerPort: filenBridge.httpServerPort,
@@ -69,6 +89,7 @@ export default function useHTTPServer() {
 		})
 
 		return () => {
+			clearInterval(interval)
 			appStateListener.remove()
 		}
 	}, [])

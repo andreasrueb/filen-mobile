@@ -21,12 +21,16 @@ export const Listeners = memo(() => {
 		isRefreshingRef.current = true
 
 		try {
-			const [, httpServerInfo] = await Promise.all([NetInfo.refresh(), filenBridge.proxy("restartHTTPServer", undefined)])
+			await NetInfo.refresh()
 
-			filenBridge.httpAuthToken = httpServerInfo.authToken
-			filenBridge.httpServerPort = httpServerInfo.port
+			const alive = await filenBridge.httpServerAlive()
 
-			isRefreshingRef.current = false
+			if (!alive) {
+				const httpServerInfo = await filenBridge.proxy("restartHTTPServer", undefined)
+
+				filenBridge.httpAuthToken = httpServerInfo.authToken
+				filenBridge.httpServerPort = httpServerInfo.port
+			}
 		} catch (e) {
 			console.error(e)
 		} finally {
