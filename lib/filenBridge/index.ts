@@ -2,12 +2,6 @@ import FilenSdkBridgeModule, { type FilenSdkBridgeModuleType } from "../../modul
 import { useTransfersStore } from "@/stores/transfers.store"
 import axios from "axios"
 
-// Map JS function names to Nitro method names where they differ.
-// "register" is a C++ reserved-ish name, so the native side uses "register_".
-const nativeNameMap: Record<string, string> = {
-	register: "register_"
-}
-
 export class FilenBridge {
 	private _httpServerPort: number | null = null
 	private _httpAuthToken: string | null = null
@@ -29,16 +23,15 @@ export class FilenBridge {
 		}
 
 		const paramsJson = JSON.stringify(params ?? {})
-		const nativeName = nativeNameMap[functionName] ?? functionName
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const nativeModule = FilenSdkBridgeModule as any
 
-		if (typeof nativeModule[nativeName] !== "function") {
-			throw new Error(`[FilenBridge] No native function for ${functionName} (mapped: ${nativeName})`)
+		if (typeof nativeModule[functionName] !== "function") {
+			throw new Error(`[FilenBridge] No native function for ${functionName}`)
 		}
 
-		const result = await nativeModule[nativeName](paramsJson)
+		const result = await nativeModule[functionName](paramsJson)
 
 		// For functions that return JSON, parse the result
 		if (typeof result === "string" && result.length > 0) {

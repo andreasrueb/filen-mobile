@@ -2,7 +2,9 @@
 
 #include <NitroModules/HybridObject.hpp>
 #include <NitroModules/Promise.hpp>
+#include <memory>
 #include <string>
+#include <stdexcept>
 
 // Rust FFI header
 #include "filen_mobile_sdk_bridge_ffi.h"
@@ -11,18 +13,32 @@ namespace margelo::nitro::filensdk {
 
 using namespace margelo::nitro;
 
+// Custom deleter so we can use shared_ptr for the opaque Rust handle.
+struct BridgeDeleter {
+    void operator()(FilenMobileSdkBridge* p) const noexcept {
+        if (p) filen_bridge_free(p);
+    }
+};
+
+// RAII guard that frees both data and error pointers of an FfiResult.
+struct FfiResultGuard {
+    FfiResult r;
+    explicit FfiResultGuard(FfiResult result) : r(result) {}
+    ~FfiResultGuard() {
+        if (r.data)  filen_bridge_free_string(r.data);
+        if (r.error) filen_bridge_free_string(r.error);
+    }
+    FfiResultGuard(const FfiResultGuard&) = delete;
+    FfiResultGuard& operator=(const FfiResultGuard&) = delete;
+};
+
 class HybridFilenSdkBridge : public HybridObject {
 public:
-    HybridFilenSdkBridge() : HybridObject(TAG) {
-        bridge_ = filen_bridge_new();
-    }
+    HybridFilenSdkBridge()
+        : HybridObject(TAG)
+        , bridge_(filen_bridge_new(), BridgeDeleter{}) {}
 
-    ~HybridFilenSdkBridge() override {
-        if (bridge_) {
-            filen_bridge_free(bridge_);
-            bridge_ = nullptr;
-        }
-    }
+    ~HybridFilenSdkBridge() override = default;
 
     // Non-copyable
     HybridFilenSdkBridge(const HybridFilenSdkBridge&) = delete;
@@ -34,7 +50,7 @@ public:
         registerHybrids(this, [](Prototype& proto) {
             // Auth
             proto.registerHybridMethod("login", &HybridFilenSdkBridge::login);
-            proto.registerHybridMethod("register_", &HybridFilenSdkBridge::register_);
+            proto.registerHybridMethod("register", &HybridFilenSdkBridge::register_);
             proto.registerHybridMethod("reinitSDK", &HybridFilenSdkBridge::reinitSDK);
             proto.registerHybridMethod("resendConfirmation", &HybridFilenSdkBridge::resendConfirmation);
             proto.registerHybridMethod("forgotPassword", &HybridFilenSdkBridge::forgotPassword);
@@ -190,36 +206,25 @@ public:
     }
 
 private:
-    // Helper: call a Rust FFI function that returns a string
-    using FfiStringFn = FfiResult(*)(const FilenMobileSdkBridge*, const char*);
-    std::shared_ptr<Promise<std::string>> callString(FfiStringFn fn, const std::string& paramsJson) {
-        auto* b = bridge_;
+    // Helper: call a Rust FFI function that returns a string.
+    // Captures bridge_ as shared_ptr so the Rust handle outlives the async lambda.
+    using FfiFn = FfiResult(*)(const FilenMobileSdkBridge*, const char*);
+
+    std::shared_ptr<Promise<std::string>> callString(FfiFn fn, const std::string& paramsJson) {
+        auto b = bridge_; // shared_ptr copy — prevents use-after-free
         return Promise<std::string>::async([b, fn, paramsJson]() -> std::string {
-            FfiResult result = fn(b, paramsJson.c_str());
-            if (result.error != nullptr) {
-                std::string err(result.error);
-                filen_bridge_free_string(result.error);
-                throw std::runtime_error(err);
-            }
-            std::string data(result.data ? result.data : "");
-            if (result.data) filen_bridge_free_string(result.data);
-            return data;
+            FfiResultGuard g{fn(b.get(), paramsJson.c_str())};
+            if (g.r.error) throw std::runtime_error(std::string(g.r.error));
+            return std::string(g.r.data ? g.r.data : "");
         });
     }
 
-    // Helper: call a Rust FFI function that returns void
-    using FfiVoidFn = FfiResult(*)(const FilenMobileSdkBridge*, const char*);
-    std::shared_ptr<Promise<void>> callVoid(FfiVoidFn fn, const std::string& paramsJson) {
-        auto* b = bridge_;
+    // Helper: call a Rust FFI function that returns void.
+    std::shared_ptr<Promise<void>> callVoid(FfiFn fn, const std::string& paramsJson) {
+        auto b = bridge_; // shared_ptr copy
         return Promise<void>::async([b, fn, paramsJson]() {
-            FfiResult result = fn(b, paramsJson.c_str());
-            if (result.error != nullptr) {
-                std::string err(result.error);
-                filen_bridge_free_string(result.error);
-                if (result.data) filen_bridge_free_string(result.data);
-                throw std::runtime_error(err);
-            }
-            if (result.data) filen_bridge_free_string(result.data);
+            FfiResultGuard g{fn(b.get(), paramsJson.c_str())};
+            if (g.r.error) throw std::runtime_error(std::string(g.r.error));
         });
     }
 
@@ -381,7 +386,7 @@ private:
     std::shared_ptr<Promise<std::string>> httpStatus(const std::string& p) { return callString(filen_bridge_http_status, p); }
 
 private:
-    FilenMobileSdkBridge* bridge_ = nullptr;
+    std::shared_ptr<FilenMobileSdkBridge> bridge_;
     static constexpr auto TAG = "FilenSdkBridge";
 };
 

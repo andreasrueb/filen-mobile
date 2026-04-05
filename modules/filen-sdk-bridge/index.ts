@@ -4,7 +4,7 @@ import { NitroModules, type HybridObject } from "react-native-nitro-modules"
 export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	// Auth
 	login(paramsJson: string): Promise<string>
-	register_(paramsJson: string): Promise<void>
+	register(paramsJson: string): Promise<void>
 	reinitSDK(paramsJson: string): Promise<void>
 	resendConfirmation(paramsJson: string): Promise<void>
 	forgotPassword(paramsJson: string): Promise<void>
@@ -151,4 +151,19 @@ export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	httpStatus(paramsJson: string): Promise<string>
 }
 
-export default NitroModules.createHybridObject<FilenSdkBridgeModuleType>("FilenSdkBridge")
+let instance: FilenSdkBridgeModuleType | null = null
+
+function getBridge(): FilenSdkBridgeModuleType {
+	if (!instance) {
+		instance = NitroModules.createHybridObject<FilenSdkBridgeModuleType>("FilenSdkBridge")
+	}
+
+	return instance
+}
+
+export default new Proxy({} as FilenSdkBridgeModuleType, {
+	get(_target, prop) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return (getBridge() as any)[prop]
+	}
+})
