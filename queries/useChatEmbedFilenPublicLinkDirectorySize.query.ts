@@ -22,7 +22,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkDirectorySize
 		throw new Error("No directory provided.")
 	}
 
-	return await filenBridge.proxy("directorySizePublicLink", {
+	return await filenBridge.directorySizePublicLink({
 		uuid: params.info.data.info.parent,
 		linkUUID: params.parsedLink.uuid
 	})

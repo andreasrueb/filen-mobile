@@ -148,9 +148,7 @@ export const ListItem = memo(
 			fullScreenLoadingModal.show()
 
 			try {
-				const parent = await filenBridge.proxy("getDirectory", {
-					uuid: info.item.item.parent
-				})
+				const parent = await filenBridge.getDirectory(info.item.item.parent)
 
 				cache.directoryUUIDToName.set(info.item.item.parent, parent.metadataDecrypted.name)
 

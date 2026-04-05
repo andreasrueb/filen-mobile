@@ -284,10 +284,7 @@ export class CameraUpload {
 		}
 
 		const items: Tree = {}
-		const tree = await filenBridge.proxy("getDirectoryTree", {
-			uuid: state.remote.uuid,
-			type: "normal"
-		})
+		const tree = await filenBridge.getDirectoryTree(state.remote.uuid)
 
 		for (const treeItemPath in tree) {
 			const file = tree[treeItemPath]
@@ -415,10 +412,7 @@ export class CameraUpload {
 					const parentUUID =
 						!parentName || parentName.length === 0 || parentName === "."
 							? state.remote.uuid
-							: await filenBridge.proxy("createDirectory", {
-									name: parentName,
-									parent: state.remote.uuid
-							  })
+							: (await filenBridge.createDirectory(state.remote.uuid, parentName)).uuid
 
 					if (abortSignal?.aborted) {
 						throw new Error("Aborted")
@@ -523,10 +517,7 @@ export class CameraUpload {
 							key: item.key
 						} satisfies FileMetadata
 
-						await filenBridge.proxy("editFileMetadata", {
-							uuid: item.uuid,
-							metadata: newFileMetadata
-						})
+						await filenBridge.editFileMetadata(item.uuid, newFileMetadata.name, newFileMetadata.mime)
 
 						if (this.type === "foreground") {
 							driveItemsQueryUpdate({
@@ -638,9 +629,7 @@ export class CameraUpload {
 				throw new Error("Aborted")
 			}
 
-			const remotePath = await filenBridge.proxy("directoryUUIDToPath", {
-				uuid: state.remote.uuid
-			})
+			const remotePath = await filenBridge.directoryUUIDToPath(state.remote.uuid)
 
 			if (!remotePath) {
 				return

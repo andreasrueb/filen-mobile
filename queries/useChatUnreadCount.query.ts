@@ -12,7 +12,7 @@ export type UseChatUnreadCountQueryParams = {
 }
 
 export async function fetchData(params: UseChatUnreadCountQueryParams): Promise<number> {
-	return filenBridge.proxy("chatUnreadCount", params)
+	return filenBridge.chatUnreadCount(params.conversation)
 }
 
 export function useChatUnreadCountQuery(

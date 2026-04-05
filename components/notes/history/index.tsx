@@ -50,10 +50,7 @@ export const Item = memo(({ info, note }: { info: ListRenderItemInfo<ListItemInf
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("restoreNoteHistory", {
-				uuid: note.uuid,
-				id: info.item.history.id
-			})
+			await filenBridge.restoreNoteHistory(note.uuid, info.item.history.id)
 
 			await noteHistoryQuery.refetch()
 

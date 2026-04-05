@@ -217,9 +217,7 @@ export const Item = memo(
 					return
 				}
 
-				await filenBridge.proxy("deleteFile", {
-					uuid: playlistToDelete.fileUUID
-				})
+				await filenBridge.deleteFile(playlistToDelete.fileUUID)
 			} catch (e) {
 				console.error(e)
 

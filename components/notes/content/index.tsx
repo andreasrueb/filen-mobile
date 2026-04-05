@@ -100,11 +100,7 @@ export const Content = memo(
 
 				onValueChangeTimeoutRef.current = createExecutableTimeout(async () => {
 					try {
-						await filenBridge.proxy("editNote", {
-							uuid: note.uuid,
-							content: value,
-							type: note.type
-						})
+						await filenBridge.editNote(note.uuid, value, "")
 					} catch (e) {
 						console.error(e)
 

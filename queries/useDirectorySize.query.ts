@@ -20,7 +20,7 @@ export async function fetchData(params: UseDirectorySizeQueryParams) {
 	await mutex.acquire()
 
 	try {
-		return await filenBridge.proxy("fetchDirectorySize", params)
+		return await filenBridge.fetchDirectorySize(params.uuid)
 	} finally {
 		mutex.release()
 	}

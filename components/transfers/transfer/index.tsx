@@ -63,15 +63,9 @@ export const Transfer = memo(({ info }: { info: ListRenderItemInfo<ListItemInfo>
 
 				try {
 					if (buttonIndex === 0 && progressNormalized <= 99) {
-						await filenBridge.proxy("transferAction", {
-							action: info.item.transfer.state === "paused" ? "resume" : "pause",
-							id: info.item.transfer.id
-						})
+						await filenBridge.transferAction(info.item.transfer.id, info.item.transfer.state === "paused" ? "resume" : "pause")
 					} else if (buttonIndex === 1 && progressNormalized <= 99) {
-						await filenBridge.proxy("transferAction", {
-							action: "stop",
-							id: info.item.transfer.id
-						})
+						await filenBridge.transferAction(info.item.transfer.id, "stop")
 					}
 				} catch (e) {
 					console.error(e)

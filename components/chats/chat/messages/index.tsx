@@ -111,10 +111,7 @@ export const Messages = memo(({ chat, isPreview, inputHeight }: { chat: ChatConv
 				return
 			}
 
-			const fetched: ChatMessage[] = await filenBridge.proxy("fetchChatMessages", {
-				conversation: chat.uuid,
-				timestamp: firstMessage.sentTimestamp
-			})
+			const fetched = await filenBridge.fetchChatMessages(chat.uuid, firstMessage.sentTimestamp)
 
 			const existingUUIDs = messages.map(m => m.uuid)
 

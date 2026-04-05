@@ -14,7 +14,6 @@ import * as Clipboard from "expo-clipboard"
 import { alertPrompt } from "@/components/prompts/alertPrompt"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
 import { router } from "expo-router"
-import { randomUUID } from "expo-crypto"
 import pathModule from "path"
 import { noteContentQueryUpdate } from "@/queries/useNoteContent.query"
 import { notesQueryUpdate } from "@/queries/useNotes.query"
@@ -34,10 +33,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("changeNoteType", {
-				uuid: note.uuid,
-				newType
-			})
+			await filenBridge.changeNoteType(note.uuid, newType)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -84,10 +80,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("pinNote", {
-				uuid: note.uuid,
-				pin: pinned
-			})
+			await filenBridge.pinNote(note.uuid, pinned)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -122,10 +115,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("favoriteNote", {
-				uuid: note.uuid,
-				favorite
-			})
+			await filenBridge.favoriteNote(note.uuid, favorite)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -151,9 +141,8 @@ export class NotesService {
 		}
 
 		try {
-			const newUUID = await filenBridge.proxy("duplicateNote", {
-				uuid: note.uuid
-			})
+			const duplicatedNote = await filenBridge.duplicateNote(note.uuid)
+			const newUUID = duplicatedNote.uuid
 
 			notesQueryUpdate({
 				updater: prev => [
@@ -199,9 +188,7 @@ export class NotesService {
 		}
 
 		try {
-			let { content } = await filenBridge.proxy("fetchNoteContent", {
-				uuid: note.uuid
-			})
+			let { content } = await filenBridge.fetchNoteContent(note.uuid)
 
 			if (note.type === "rich") {
 				content = striptags(content.split("<p><br></p>").join("\n"))
@@ -309,9 +296,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("archiveNote", {
-				uuid: note.uuid
-			})
+			await filenBridge.archiveNote(note.uuid)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -357,9 +342,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("trashNote", {
-				uuid: note.uuid
-			})
+			await filenBridge.trashNote(note.uuid)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -387,9 +370,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("restoreNote", {
-				uuid: note.uuid
-			})
+			await filenBridge.restoreNote(note.uuid)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -448,10 +429,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("renameNote", {
-				uuid: note.uuid,
-				title: newTitle
-			})
+			await filenBridge.renameNote(note.uuid, newTitle)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -499,9 +477,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("deleteNote", {
-				uuid: note.uuid
-			})
+			await filenBridge.deleteNote(note.uuid)
 
 			notesQueryUpdate({
 				updater: prev => prev.filter(n => n.uuid !== note.uuid)
@@ -546,10 +522,7 @@ export class NotesService {
 		}
 
 		try {
-			await filenBridge.proxy("removeNoteParticipant", {
-				uuid: note.uuid,
-				userId: userId ?? authService.getSDKConfig().userId
-			})
+			await filenBridge.removeNoteParticipant(note.uuid, userId ?? authService.getSDKConfig().userId)
 
 			notesQueryUpdate({
 				updater: prev => prev.filter(n => n.uuid !== note.uuid)
@@ -577,10 +550,7 @@ export class NotesService {
 				return
 			}
 
-			await filenBridge.proxy("tagNote", {
-				uuid: note.uuid,
-				tag: tag.uuid
-			})
+			await filenBridge.tagNote(note.uuid, tag.uuid)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -612,10 +582,7 @@ export class NotesService {
 				return
 			}
 
-			await filenBridge.proxy("untagNote", {
-				uuid: note.uuid,
-				tag: tag.uuid
-			})
+			await filenBridge.untagNote(note.uuid, tag.uuid)
 
 			notesQueryUpdate({
 				updater: prev =>
@@ -676,21 +643,14 @@ export class NotesService {
 		}
 
 		try {
-			const uuid = randomUUID()
-
-			await filenBridge.proxy("createNote", {
-				uuid,
-				title
-			})
+			const createdNote = await filenBridge.createNote(title)
+			const uuid = createdNote.uuid
 
 			if (type) {
-				await filenBridge.proxy("changeNoteType", {
-					uuid,
-					newType: type
-				})
+				await filenBridge.changeNoteType(uuid, type)
 			}
 
-			const notes: Note[] = await filenBridge.proxy("fetchNotes", undefined)
+			const notes = await filenBridge.fetchNotes()
 
 			notesQueryUpdate({
 				updater: () => notes

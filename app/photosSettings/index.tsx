@@ -131,9 +131,7 @@ export const Settings = memo(() => {
 		}
 
 		try {
-			const path = await filenBridge.proxy("directoryUUIDToPath", {
-				uuid: directory.uuid
-			})
+			const path = await filenBridge.directoryUUIDToPath(directory.uuid)
 
 			setCameraUploadState(prev => ({
 				...prev,

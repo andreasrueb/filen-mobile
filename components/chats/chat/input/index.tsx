@@ -338,10 +338,7 @@ export const Input = memo(
 				await sendTypingEventMutex.current.acquire()
 
 				await filenBridge
-					.proxy("sendChatTyping", {
-						conversation: chat.uuid,
-						type
-					})
+					.sendChatTyping(chat.uuid, type)
 					.catch(e => {
 						console.error(e)
 					})
@@ -497,43 +494,19 @@ export const Input = memo(
 				})
 
 				if (editMessageCopied) {
-					await filenBridge.proxy("editChatMessage", {
-						uuid,
-						conversation: chat.uuid,
-						message: valueCopied
-					})
+					await filenBridge.editChatMessage(chat.uuid, uuid, valueCopied)
 				} else {
-					await filenBridge.proxy("sendChatMessage", {
-						uuid,
-						conversation: chat.uuid,
-						message: valueCopied,
-						replyTo: replyToMessageCopied ? replyToMessageCopied.uuid : ""
-					})
+					await filenBridge.sendChatMessage(chat.uuid, valueCopied, replyToMessageCopied ? replyToMessageCopied.uuid : "", uuid)
 				}
 
 				await Promise.all([
 					sendTypingEvent("up"),
-					filenBridge.proxy("chatMarkAsRead", {
-						conversation: chat.uuid
-					}),
-					filenBridge.proxy("updateChatsLastFocus", {
-						values: lastFocus.some(v => v.uuid === chat.uuid)
-							? lastFocus.map(v =>
-									v.uuid === chat.uuid
-										? {
-												...v,
-												lastFocus: lastFocusTimestamp
-										  }
-										: v
-							  )
-							: [
-									...lastFocus,
-									{
-										uuid: chat.uuid,
-										lastFocus: lastFocusTimestamp
-									}
-							  ]
-					}),
+					filenBridge.chatMarkAsRead(chat.uuid),
+					filenBridge.updateChatsLastFocus(
+						lastFocus.some(v => v.uuid === chat.uuid)
+							? lastFocus.map(v => v.uuid)
+							: [...lastFocus.map(v => v.uuid), chat.uuid]
+					),
 					chatUnreadQuery.refetch(),
 					chatUnreadCountQuery.refetch()
 				])

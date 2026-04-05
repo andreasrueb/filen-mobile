@@ -9,8 +9,8 @@ export const BASE_QUERY_KEY = "useContactsRequestsQuery"
 
 export async function fetchData(): Promise<{ incoming: ContactRequest[]; outgoing: ContactRequest[] }> {
 	const [incoming, outgoing] = await Promise.all([
-		filenBridge.proxy("fetchIncomingContactRequests", undefined) as Promise<ContactRequest[]>,
-		filenBridge.proxy("fetchOutgoingContactRequests", undefined) as Promise<ContactRequest[]>
+		filenBridge.fetchIncomingContactRequests(),
+		filenBridge.fetchOutgoingContactRequests()
 	])
 
 	return {

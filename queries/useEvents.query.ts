@@ -13,7 +13,7 @@ export type UseEventsQueryParams = {
 }
 
 export async function fetchData(params: UseEventsQueryParams): Promise<UserEvent[]> {
-	return await filenBridge.proxy("fetchEvents", params)
+	return await filenBridge.fetchEvents(params)
 }
 
 export function useEventsQuery(

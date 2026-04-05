@@ -40,10 +40,7 @@ export const RightView = memo(({ item, version }: { item: DriveCloudItem; versio
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("restoreFileVersion", {
-				uuid: version.uuid,
-				currentUUID: item.uuid
-			})
+			await filenBridge.restoreFileVersion({ uuid: version.uuid, currentUUID: item.uuid })
 
 			if (canGoBack()) {
 				back()
@@ -76,9 +73,7 @@ export const RightView = memo(({ item, version }: { item: DriveCloudItem; versio
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("deleteFile", {
-				uuid: version.uuid
-			})
+			await filenBridge.deleteFile(version.uuid)
 
 			await query.refetch()
 		} catch (e) {

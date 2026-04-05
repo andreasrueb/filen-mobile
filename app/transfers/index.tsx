@@ -82,10 +82,7 @@ export const Transfers = memo(() => {
 						return
 					}
 
-					await filenBridge.proxy("transferAction", {
-						id: transfer.id,
-						action: "pause"
-					})
+					await filenBridge.transferAction(transfer.id, "pause")
 				})
 			)
 		} catch (e) {
@@ -110,10 +107,7 @@ export const Transfers = memo(() => {
 						return
 					}
 
-					await filenBridge.proxy("transferAction", {
-						id: transfer.id,
-						action: "resume"
-					})
+					await filenBridge.transferAction(transfer.id, "resume")
 				})
 			)
 		} catch (e) {
@@ -138,10 +132,7 @@ export const Transfers = memo(() => {
 						return
 					}
 
-					await filenBridge.proxy("transferAction", {
-						id: transfer.id,
-						action: "stop"
-					})
+					await filenBridge.transferAction(transfer.id, "stop")
 				})
 			)
 		} catch (e) {

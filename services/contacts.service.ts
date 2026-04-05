@@ -104,9 +104,7 @@ export class ContactsService {
 		}
 
 		try {
-			await filenBridge.proxy("removeContact", {
-				uuid
-			})
+			await filenBridge.removeContact(uuid)
 
 			contactsQueryUpdate({
 				params: {
@@ -165,9 +163,7 @@ export class ContactsService {
 		}
 
 		try {
-			await filenBridge.proxy("blockContact", {
-				email
-			})
+			await filenBridge.blockContact(email)
 
 			await contactsQueryRefetch({
 				type: "blocked"
@@ -230,9 +226,7 @@ export class ContactsService {
 		}
 
 		try {
-			await filenBridge.proxy("unblockContact", {
-				uuid
-			})
+			await filenBridge.unblockContact(uuid)
 
 			await contactsQueryRefetch({
 				type: "all"
@@ -257,9 +251,7 @@ export class ContactsService {
 		}
 
 		try {
-			await filenBridge.proxy("acceptContactRequest", {
-				uuid
-			})
+			await filenBridge.acceptContactRequest(uuid)
 
 			await contactsQueryRefetch({
 				type: "all"
@@ -284,9 +276,7 @@ export class ContactsService {
 		}
 
 		try {
-			await filenBridge.proxy("denyContactRequest", {
-				uuid
-			})
+			await filenBridge.denyContactRequest(uuid)
 
 			contactsRequestsQueryUpdate({
 				updater: prev => ({
@@ -307,9 +297,7 @@ export class ContactsService {
 		}
 
 		try {
-			await filenBridge.proxy("deleteOutgoingContactRequest", {
-				uuid
-			})
+			await filenBridge.deleteOutgoingContactRequest(uuid)
 
 			contactsRequestsQueryUpdate({
 				updater: prev => ({
@@ -357,9 +345,7 @@ export class ContactsService {
 		}
 
 		try {
-			await filenBridge.proxy("sendContactRequest", {
-				email
-			})
+			await filenBridge.sendContactRequest(email)
 
 			await contactsRequestsQueryRefetch()
 

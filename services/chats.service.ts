@@ -7,9 +7,7 @@ import fullScreenLoadingModal from "@/components/modals/fullScreenLoadingModal"
 import authService from "./auth.service"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
 import type { ChatMessage } from "@filen/sdk/dist/types/api/v3/chat/messages"
-import type { ChatLastFocusValues } from "@filen/sdk/dist/types/api/v3/chat/lastFocusUpdate"
 import contactsService from "./contacts.service"
-import { randomUUID } from "expo-crypto"
 import type { Contact } from "@filen/sdk/dist/types/api/v3/contacts"
 import * as ImagePicker from "expo-image-picker"
 import * as DocumentPicker from "expo-document-picker"
@@ -54,9 +52,7 @@ export class ChatsService {
 		}
 
 		try {
-			await filenBridge.proxy("leaveChat", {
-				conversation: chat.uuid
-			})
+			await filenBridge.leaveChat(chat.uuid)
 
 			chatsQueryUpdate({
 				updater: prev => prev.filter(c => c.uuid !== chat.uuid)
@@ -99,9 +95,13 @@ export class ChatsService {
 		}
 
 		try {
-			await filenBridge.proxy("removeChatParticipant", {
-				conversation: chat.uuid,
-				userId: participant.userId
+			await filenBridge.removeChatParticipant(chat.uuid, {
+				uuid: "",
+				userId: participant.userId,
+				email: participant.email,
+				nickName: participant.nickName,
+				publicKey: "",
+				avatar: participant.avatar
 			})
 
 			chatsQueryUpdate({
@@ -149,12 +149,16 @@ export class ChatsService {
 		}
 
 		try {
-			const uuid = randomUUID()
+			const chatContacts = contacts.map(c => ({
+				uuid: c.uuid,
+				userId: c.userId,
+				email: c.email,
+				nickName: c.nickName,
+				publicKey: "",
+				avatar: c.avatar
+			}))
 
-			await filenBridge.proxy("createChat", {
-				uuid,
-				contacts
-			})
+			const chat = await filenBridge.createChat(chatContacts)
 
 			await chatsQueryRefetch()
 
@@ -162,7 +166,7 @@ export class ChatsService {
 				router.push({
 					pathname: "/chat/[uuid]",
 					params: {
-						uuid
+						uuid: chat.uuid
 					}
 				})
 			}
@@ -200,9 +204,7 @@ export class ChatsService {
 		}
 
 		try {
-			await filenBridge.proxy("deleteChat", {
-				conversation: chat.uuid
-			})
+			await filenBridge.deleteChat(chat.uuid)
 
 			chatsQueryUpdate({
 				updater: prev => prev.filter(c => c.uuid !== chat.uuid)
@@ -257,10 +259,7 @@ export class ChatsService {
 		}
 
 		try {
-			await filenBridge.proxy("editChatName", {
-				conversation: chat.uuid,
-				name: newName
-			})
+			await filenBridge.editChatName(chat.uuid, newName)
 
 			chatsQueryUpdate({
 				updater: prev =>
@@ -322,31 +321,8 @@ export class ChatsService {
 			})
 
 			await Promise.all([
-				filenBridge.proxy("chatMarkAsRead", {
-					conversation: chat.uuid
-				}),
-				(async () => {
-					const lastFocusValues: ChatLastFocusValues[] = await filenBridge.proxy("fetchChatsLastFocus", undefined)
-
-					await filenBridge.proxy("updateChatsLastFocus", {
-						values: lastFocusValues.some(v => v.uuid === chat.uuid)
-							? lastFocusValues.map(v =>
-									v.uuid === chat.uuid
-										? {
-												...v,
-												lastFocus: lastFocusTimestamp ?? now
-										  }
-										: v
-							  )
-							: [
-									...lastFocusValues,
-									{
-										uuid: chat.uuid,
-										lastFocus: lastFocusTimestamp ?? now
-									}
-							  ]
-					})
-				})()
+				filenBridge.chatMarkAsRead(chat.uuid),
+				filenBridge.updateChatsLastFocus([chat.uuid])
 			])
 		} finally {
 			if (!disableLoader) {
@@ -369,10 +345,7 @@ export class ChatsService {
 		}
 
 		try {
-			await filenBridge.proxy("muteChat", {
-				uuid: chat.uuid,
-				mute
-			})
+			await filenBridge.muteChat(chat.uuid, mute)
 
 			chatsQueryUpdate({
 				updater: prev =>
@@ -419,9 +392,7 @@ export class ChatsService {
 		}
 
 		try {
-			await filenBridge.proxy("disableChatMessageEmbeds", {
-				uuid: message.uuid
-			})
+			await filenBridge.disableChatMessageEmbeds(message.uuid, chat.uuid)
 
 			chatMessagesQueryUpdate({
 				params: {
@@ -471,9 +442,7 @@ export class ChatsService {
 		}
 
 		try {
-			await filenBridge.proxy("deleteChatMessage", {
-				uuid: message.uuid
-			})
+			await filenBridge.deleteChatMessage(chat.uuid, message.uuid)
 
 			chatMessagesQueryUpdate({
 				params: {
@@ -505,11 +474,7 @@ export class ChatsService {
 						}
 					}
 
-					await filenBridge.proxy("toggleItemPublicLink", {
-						item,
-						enable: true,
-						linkUUID: ""
-					})
+					await filenBridge.toggleItemPublicLink(item, true, "")
 
 					const linkStatus = await fetchItemPublicLinkStatus({
 						item
@@ -533,10 +498,9 @@ export class ChatsService {
 	private async getChatUploadsDirectoryUuid(): Promise<string> {
 		const { baseFolderUUID } = authService.getSDKConfig()
 
-		return await filenBridge.proxy("createDirectory", {
-			parent: baseFolderUUID,
-			name: "Chat Uploads"
-		})
+		const result = await filenBridge.createDirectory(baseFolderUUID, "Chat Uploads")
+
+		return result.uuid
 	}
 
 	public async uploadMediaForAttachment({

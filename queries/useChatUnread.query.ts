@@ -7,7 +7,7 @@ import useRefreshOnFocus from "@/hooks/useRefreshOnFocus"
 export const BASE_QUERY_KEY = "useChatUnreadQuery"
 
 export async function fetchData(): Promise<number> {
-	return await filenBridge.proxy("chatUnread", undefined)
+	return await filenBridge.chatUnread()
 }
 
 export function useChatUnreadQuery(

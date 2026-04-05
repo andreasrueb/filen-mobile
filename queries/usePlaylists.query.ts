@@ -46,25 +46,14 @@ export async function findPlaylistDirectoryUUID(): Promise<string> {
 		throw new Error("Base folder UUID is not set.")
 	}
 
-	const rootFolderList: DriveCloudItem[] = await filenBridge.proxy("fetchCloudItems", {
-		parent: baseFolderUUID,
-		of: "drive",
-		receiverId: 0
-	})
+	const rootFolderList: DriveCloudItem[] = (await filenBridge.fetchCloudItems("drive", baseFolderUUID, 0)) as DriveCloudItem[]
 
 	let filenDirectory = rootFolderList.filter(item => item.type === "directory").find(item => item.name === ".filen")
 
 	if (!filenDirectory) {
-		await filenBridge.proxy("createDirectory", {
-			parent: baseFolderUUID,
-			name: ".filen"
-		})
+		await filenBridge.createDirectory(baseFolderUUID, ".filen")
 
-		const rootFolderList: DriveCloudItem[] = await filenBridge.proxy("fetchCloudItems", {
-			parent: baseFolderUUID,
-			of: "drive",
-			receiverId: 0
-		})
+		const rootFolderList: DriveCloudItem[] = (await filenBridge.fetchCloudItems("drive", baseFolderUUID, 0)) as DriveCloudItem[]
 
 		filenDirectory = rootFolderList.filter(item => item.type === "directory").find(item => item.name === ".filen")
 	}
@@ -73,25 +62,14 @@ export async function findPlaylistDirectoryUUID(): Promise<string> {
 		throw new Error("Filen directory not found.")
 	}
 
-	const filenDirectoryList: DriveCloudItem[] = await filenBridge.proxy("fetchCloudItems", {
-		parent: filenDirectory.uuid,
-		of: "drive",
-		receiverId: 0
-	})
+	const filenDirectoryList: DriveCloudItem[] = (await filenBridge.fetchCloudItems("drive", filenDirectory.uuid, 0)) as DriveCloudItem[]
 
 	let playlistsDirectory = filenDirectoryList.filter(item => item.type === "directory").find(item => item.name === "playlists")
 
 	if (!playlistsDirectory) {
-		await filenBridge.proxy("createDirectory", {
-			parent: filenDirectory.uuid,
-			name: "playlists"
-		})
+		await filenBridge.createDirectory(filenDirectory.uuid, "playlists")
 
-		const filenDirectoryList: DriveCloudItem[] = await filenBridge.proxy("fetchCloudItems", {
-			parent: filenDirectory.uuid,
-			of: "drive",
-			receiverId: 0
-		})
+		const filenDirectoryList: DriveCloudItem[] = (await filenBridge.fetchCloudItems("drive", filenDirectory.uuid, 0)) as DriveCloudItem[]
 
 		playlistsDirectory = filenDirectoryList.filter(item => item.type === "directory").find(item => item.name === "playlists")
 	}
@@ -148,11 +126,7 @@ export async function updatePlaylist(playlist: Playlist): Promise<{
 export async function fetchData(): Promise<(Playlist & { fileUUID: string })[]> {
 	const playlistsDirectoryUUID = await findPlaylistDirectoryUUID()
 
-	const playlists: DriveCloudItem[] = await filenBridge.proxy("fetchCloudItems", {
-		parent: playlistsDirectoryUUID,
-		of: "drive",
-		receiverId: 0
-	})
+	const playlists: DriveCloudItem[] = (await filenBridge.fetchCloudItems("drive", playlistsDirectoryUUID, 0)) as DriveCloudItem[]
 
 	return (
 		await Promise.all(

@@ -202,16 +202,9 @@ export default function Participants() {
 		try {
 			const addedParticipants = await Promise.all(
 				filtered.map(async contact => {
-					const publicKey = await filenBridge.proxy("fetchUserPublicKey", {
-						email: contact.email
-					})
+					const publicKey = await filenBridge.fetchUserPublicKey(contact.email)
 
-					await filenBridge.proxy("addNoteParticipant", {
-						uuid: note.uuid,
-						contactUUID: contact.uuid,
-						permissionsWrite: true,
-						publicKey
-					})
+					await filenBridge.addNoteParticipant(note.uuid, contact.uuid, true)
 
 					return {
 						userId: contact.userId,

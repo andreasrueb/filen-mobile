@@ -90,10 +90,7 @@ export const Menu = memo(
 			fullScreenLoadingModal.show()
 
 			try {
-				await filenBridge.proxy("removeNoteParticipant", {
-					uuid: note.uuid,
-					userId: participant.userId
-				})
+				await filenBridge.removeNoteParticipant(note.uuid, participant.userId)
 
 				notesQueryUpdate({
 					updater: prev =>
@@ -122,11 +119,7 @@ export const Menu = memo(
 				fullScreenLoadingModal.show()
 
 				try {
-					await filenBridge.proxy("changeNoteParticipantPermissions", {
-						uuid: note.uuid,
-						userId: participant.userId,
-						permissionsWrite
-					})
+					await filenBridge.changeNoteParticipantPermissions(note.uuid, participant.userId, permissionsWrite)
 
 					notesQueryUpdate({
 						updater: prev =>

@@ -112,15 +112,11 @@ export const TwoFactor = memo(() => {
 
 		try {
 			if (twoFactorEnabled) {
-				await filenBridge.proxy("disableTwoFactorAuthentication", {
-					twoFactorCode
-				})
+				await filenBridge.disableTwoFactorAuthentication(twoFactorCode)
 			} else {
-				const recoveryKeys = await filenBridge.proxy("enableTwoFactorAuthentication", {
-					twoFactorCode
-				})
+				const result = await filenBridge.enableTwoFactorAuthentication(twoFactorCode)
 
-				await exportRecoveryKeys(recoveryKeys)
+				await exportRecoveryKeys(result.recoveryKey)
 			}
 
 			await account.refetch()

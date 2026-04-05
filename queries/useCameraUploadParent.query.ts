@@ -14,9 +14,7 @@ export async function fetchData() {
 		return null
 	}
 
-	const remotePath = await filenBridge.proxy("directoryUUIDToPath", {
-		uuid: state.remote.uuid
-	})
+	const remotePath = await filenBridge.directoryUUIDToPath(state.remote.uuid)
 
 	if (!remotePath) {
 		return

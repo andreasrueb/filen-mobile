@@ -205,10 +205,7 @@ async function socketEventListener(socketEvent: SocketEvent, focusedChatUUID: st
 			}
 
 			case "chatMessageEdited": {
-				const decryptedMessage = await filenBridge.proxy("decryptChatMessage", {
-					conversation: socketEvent.data.conversation,
-					message: socketEvent.data.message
-				})
+				const decryptedMessage = await filenBridge.decryptChatMessage(socketEvent.data.conversation, socketEvent.data.message)
 
 				chatMessagesQueryUpdate({
 					params: {
@@ -255,15 +252,9 @@ async function socketEventListener(socketEvent: SocketEvent, focusedChatUUID: st
 				}
 
 				const [decryptedMessage, decryptedReplyToMessage] = await Promise.all([
-					filenBridge.proxy("decryptChatMessage", {
-						conversation: socketEvent.data.conversation,
-						message: socketEvent.data.message
-					}),
+					filenBridge.decryptChatMessage(socketEvent.data.conversation, socketEvent.data.message),
 					socketEvent.data.replyTo && socketEvent.data.replyTo.uuid && socketEvent.data.replyTo.uuid.length > 0
-						? filenBridge.proxy("decryptChatMessage", {
-								conversation: socketEvent.data.conversation,
-								message: socketEvent.data.replyTo.message
-						  })
+						? filenBridge.decryptChatMessage(socketEvent.data.conversation, socketEvent.data.replyTo.message)
 						: Promise.resolve(null)
 				])
 

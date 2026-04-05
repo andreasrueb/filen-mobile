@@ -106,9 +106,7 @@ export const Menu = memo(({ tag, children }: { tag: NoteTag; children: React.Rea
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("deleteNoteTag", {
-				uuid: tag.uuid
-			})
+			await filenBridge.deleteNoteTag(tag.uuid)
 
 			notesTagsQueryUpdate({
 				updater: prev => prev.filter(t => t.uuid !== tag.uuid)
@@ -129,10 +127,7 @@ export const Menu = memo(({ tag, children }: { tag: NoteTag; children: React.Rea
 			fullScreenLoadingModal.show()
 
 			try {
-				await filenBridge.proxy("favoriteNoteTag", {
-					uuid: tag.uuid,
-					favorite
-				})
+				await filenBridge.favoriteNoteTag(tag.uuid, favorite)
 
 				notesTagsQueryUpdate({
 					updater: prev =>
@@ -185,10 +180,7 @@ export const Menu = memo(({ tag, children }: { tag: NoteTag; children: React.Rea
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("renameNoteTag", {
-				uuid: tag.uuid,
-				name
-			})
+			await filenBridge.renameNoteTag(tag.uuid, name)
 
 			notesTagsQueryUpdate({
 				updater: prev =>

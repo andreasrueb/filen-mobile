@@ -8,7 +8,7 @@ import type { NoteTag } from "@filen/sdk/dist/types/api/v3/notes"
 export const BASE_QUERY_KEY = "useNotesTagsQuery"
 
 export async function fetchData(): Promise<NoteTag[]> {
-	return await filenBridge.proxy("fetchNotesTags", undefined)
+	return await filenBridge.fetchNotesTags()
 }
 
 export function useNotesTagsQuery(

@@ -21,7 +21,7 @@ export type NoteContent = {
 }
 
 export async function fetchData(params: UseNoteContentQueryParams): Promise<NoteContent> {
-	return await filenBridge.proxy("fetchNoteContent", params)
+	return await filenBridge.fetchNoteContent(params.uuid)
 }
 
 export function useNoteContentQuery(

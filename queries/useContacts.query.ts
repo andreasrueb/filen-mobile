@@ -13,7 +13,7 @@ export type UseContactsQueryParams = {
 }
 
 export async function fetchData(params: UseContactsQueryParams): Promise<Contact[]> {
-	return await filenBridge.proxy("fetchContacts", params)
+	return await filenBridge.fetchContacts(params.type)
 }
 
 export function useContactsQuery(

@@ -8,7 +8,7 @@ import type { Note } from "@filen/sdk/dist/types/api/v3/notes"
 export const BASE_QUERY_KEY = "useNotesQuery"
 
 export async function fetchData(): Promise<Note[]> {
-	return await filenBridge.proxy("fetchNotes", undefined)
+	return await filenBridge.fetchNotes()
 }
 
 export function useNotesQuery(

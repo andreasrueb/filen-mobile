@@ -256,7 +256,7 @@ export const Personal = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await filenBridge.proxy("updatePersonalInformation", {
+				await filenBridge.updatePersonalInformation({
 					firstName: type === "firstName" ? value : account.data?.account.personal.firstName ?? undefined,
 					lastName: type === "lastName" ? value : account.data?.account.personal.lastName ?? undefined,
 					city: type === "city" ? value : account.data?.account.personal.city ?? undefined,
@@ -291,7 +291,7 @@ export const Personal = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await filenBridge.proxy("updatePersonalInformation", {
+				await filenBridge.updatePersonalInformation({
 					firstName: account.data?.account.personal.firstName ?? undefined,
 					lastName: account.data?.account.personal.lastName ?? undefined,
 					city: account.data?.account.personal.city ?? undefined,

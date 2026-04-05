@@ -5,7 +5,6 @@ import alerts from "@/lib/alerts"
 import { translateMemoized, t } from "@/lib/i18n"
 import * as FileSystem from "expo-file-system"
 import { inputPrompt } from "@/components/prompts/inputPrompt"
-import type { FileMetadata, FolderMetadata } from "@filen/sdk"
 import { useGalleryStore, type PreviewType } from "@/stores/gallery.store"
 import { colorPicker } from "@/components/sheets/colorPickerSheet"
 import { DEFAULT_DIRECTORY_COLOR } from "@/assets/fileIcons"
@@ -111,12 +110,8 @@ export class DriveService {
 		try {
 			const path =
 				item.type === "directory"
-					? await filenBridge.proxy("directoryUUIDToPath", {
-							uuid: item.uuid
-					  })
-					: await filenBridge.proxy("fileUUIDToPath", {
-							uuid: item.uuid
-					  })
+					? await filenBridge.directoryUUIDToPath(item.uuid)
+					: await filenBridge.fileUUIDToPath(item.uuid)
 
 			await Clipboard.setStringAsync(path)
 
@@ -208,24 +203,9 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await filenBridge.proxy("renameDirectory", {
-					uuid: item.uuid,
-					name: newName
-				})
+				await filenBridge.renameDirectory(item.uuid, newName)
 			} else {
-				await filenBridge.proxy("renameFile", {
-					uuid: item.uuid,
-					name: newName,
-					metadata: {
-						name: newName,
-						size: item.size,
-						mime: item.mime,
-						lastModified: item.lastModified,
-						hash: item.hash,
-						creation: item.creation,
-						key: item.key
-					} satisfies FileMetadata
-				})
+				await filenBridge.renameFile(item.uuid, newName)
 			}
 
 			if (queryParams) {
@@ -341,10 +321,7 @@ export class DriveService {
 		}
 
 		try {
-			await filenBridge.proxy("changeDirectoryColor", {
-				uuid: item.uuid,
-				color
-			})
+			await filenBridge.changeDirectoryColor(item.uuid, color)
 
 			if (queryParams) {
 				driveItemsQueryUpdate({
@@ -426,15 +403,9 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await filenBridge.proxy("favoriteDirectory", {
-					uuid: item.uuid,
-					favorite: newFavoriteStatus
-				})
+				await filenBridge.favoriteDirectory(item.uuid, newFavoriteStatus)
 			} else {
-				await filenBridge.proxy("favoriteFile", {
-					uuid: item.uuid,
-					favorite: newFavoriteStatus
-				})
+				await filenBridge.favoriteFile(item.uuid, newFavoriteStatus)
 			}
 
 			if (queryParams) {
@@ -592,39 +563,16 @@ export class DriveService {
 		try {
 			await Promise.all(
 				contacts.map(contact =>
-					filenBridge.proxy("shareItems", {
-						files:
-							item.type === "file"
-								? [
-										{
-											uuid: item.uuid,
-											parent: item.parent,
-											metadata: {
-												name: item.name,
-												size: item.size,
-												mime: item.mime,
-												lastModified: item.lastModified,
-												hash: item.hash,
-												creation: item.creation,
-												key: item.key
-											}
-										}
-								  ]
-								: [],
-						directories:
-							item.type === "directory"
-								? [
-										{
-											uuid: item.uuid,
-											parent: item.parent,
-											metadata: {
-												name: item.name
-											}
-										}
-								  ]
-								: [],
-						email: contact.email
-					})
+					filenBridge.shareItems(
+						[
+							{
+								uuid: item.uuid,
+								type: item.type,
+								parent: item.parent
+							}
+						],
+						contact.email
+					)
 				)
 			)
 
@@ -778,13 +726,9 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await filenBridge.proxy("trashDirectory", {
-					uuid: item.uuid
-				})
+				await filenBridge.trashDirectory(item.uuid)
 			} else {
-				await filenBridge.proxy("trashFile", {
-					uuid: item.uuid
-				})
+				await filenBridge.trashFile(item.uuid)
 			}
 
 			if (queryParams) {
@@ -864,27 +808,9 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await filenBridge.proxy("moveDirectory", {
-					uuid: item.uuid,
-					to: parent,
-					metadata: {
-						name: item.name
-					} satisfies FolderMetadata
-				})
+				await filenBridge.moveDirectory(item.uuid, parent)
 			} else {
-				await filenBridge.proxy("moveFile", {
-					uuid: item.uuid,
-					to: parent,
-					metadata: {
-						name: item.name,
-						size: item.size,
-						mime: item.mime,
-						lastModified: item.lastModified,
-						hash: item.hash,
-						creation: item.creation,
-						key: item.key
-					} satisfies FileMetadata
-				})
+				await filenBridge.moveFile(item.uuid, parent)
 			}
 
 			if (queryParams && item.parent === queryParams.parent) {
@@ -959,11 +885,8 @@ export class DriveService {
 				}
 
 				const size = Object.entries(
-					(await filenBridge.proxy("getDirectoryTree", {
-						uuid: item.uuid,
-						type: "normal"
-					})) as Record<string, { size: number }>
-				).reduce((acc, [_, value]) => acc + value.size, 0)
+					await filenBridge.getDirectoryTree(item.uuid)
+				).reduce((acc, [_, value]) => acc + (value.size ?? 0), 0)
 
 				const freeDiskSpace = await FileSystemLegacy.getFreeDiskStorageAsync()
 
@@ -1336,9 +1259,7 @@ export class DriveService {
 		}
 
 		try {
-			await filenBridge.proxy("removeSharedItem", {
-				uuid: item.uuid
-			})
+			await filenBridge.removeSharedItem(item.uuid)
 
 			if (queryParams) {
 				driveItemsQueryUpdate({
@@ -1394,10 +1315,7 @@ export class DriveService {
 		}
 
 		try {
-			await filenBridge.proxy("stopSharingItem", {
-				uuid: item.uuid,
-				receiverId: item.receiverId
-			})
+			await filenBridge.stopSharingItem(item.uuid, item.receiverId)
 
 			if (queryParams) {
 				driveItemsQueryUpdate({
@@ -1452,13 +1370,9 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await filenBridge.proxy("deleteDirectory", {
-					uuid: item.uuid
-				})
+				await filenBridge.deleteDirectory(item.uuid)
 			} else {
-				await filenBridge.proxy("deleteFile", {
-					uuid: item.uuid
-				})
+				await filenBridge.deleteFile(item.uuid)
 			}
 
 			if (queryParams) {
@@ -1509,13 +1423,9 @@ export class DriveService {
 
 		try {
 			if (item.type === "directory") {
-				await filenBridge.proxy("restoreDirectory", {
-					uuid: item.uuid
-				})
+				await filenBridge.restoreDirectory(item.uuid)
 			} else {
-				await filenBridge.proxy("restoreFile", {
-					uuid: item.uuid
-				})
+				await filenBridge.restoreFile(item.uuid)
 			}
 
 			if (queryParams) {
@@ -1566,11 +1476,7 @@ export class DriveService {
 				return
 			}
 
-			await filenBridge.proxy("toggleItemPublicLink", {
-				item,
-				enable: false,
-				linkUUID: status.uuid
-			})
+			await filenBridge.toggleItemPublicLink(item, false, status.uuid)
 
 			if (queryParams) {
 				driveItemsQueryUpdate({
@@ -1726,10 +1632,8 @@ export class DriveService {
 		}
 
 		try {
-			const directoryUUID = await filenBridge.proxy("createDirectory", {
-				parent,
-				name
-			})
+			const directoryResult = await filenBridge.createDirectory(parent, name)
+			const directoryUUID = directoryResult.uuid
 
 			if (!disableAlert) {
 				alerts.normal(

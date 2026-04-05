@@ -46,7 +46,7 @@ export const Reminders = memo(() => {
 
 			try {
 				await authService.exportMasterKeys({})
-				await filenBridge.proxy("didExportMasterKeys", undefined)
+				await filenBridge.didExportMasterKeys()
 			} catch (e) {
 				console.error(e)
 

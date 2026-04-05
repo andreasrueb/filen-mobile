@@ -42,7 +42,7 @@ export const Inner = memo(({ item, status }: { item: DriveCloudItem; status: Use
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("editItemPublicLink", {
+			await filenBridge.editItemPublicLink({
 				type: item.type,
 				itemUUID: item.uuid,
 				enableDownload: downloadEnabled,
@@ -112,9 +112,7 @@ export const Inner = memo(({ item, status }: { item: DriveCloudItem; status: Use
 			const key =
 				item.type === "file"
 					? status.key
-					: await filenBridge.proxy("decryptDirectoryPublicLinkKey", {
-							metadata: status.key
-					  })
+					: await filenBridge.decryptDirectoryPublicLinkKey(status.key)
 
 			const link = `${item.type === "file" ? FILE_PUBLIC_LINK_BASE_URL : DIRECTORY_PUBLIC_LINK_BASE_URL}${
 				status.uuid
@@ -150,19 +148,11 @@ export const Inner = memo(({ item, status }: { item: DriveCloudItem; status: Use
 					return
 				}
 
-				await filenBridge.proxy("toggleItemPublicLink", {
-					item,
-					enable: false,
-					linkUUID: status.uuid
-				})
+				await filenBridge.toggleItemPublicLink(item, false, status.uuid)
 
 				setEnabled(false)
 			} else {
-				await filenBridge.proxy("toggleItemPublicLink", {
-					item,
-					enable: true,
-					linkUUID: ""
-				})
+				await filenBridge.toggleItemPublicLink(item, true, "")
 
 				setEnabled(true)
 			}

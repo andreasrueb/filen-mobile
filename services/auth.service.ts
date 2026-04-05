@@ -70,7 +70,7 @@ export class AuthService {
 			await Promise.all([
 				params?.background
 					? Promise.resolve()
-					: filenBridge.proxy("reinitSDK", {
+					: filenBridge.reinitSDK({
 							sdkConfig,
 							tmpPath
 					  }),
@@ -184,11 +184,7 @@ export class AuthService {
 		}
 
 		try {
-			const sdkConfig = await filenBridge.proxy("login", {
-				email,
-				password,
-				twoFactorCode: twoFactorCode ?? "XXXXXX"
-			})
+			const sdkConfig = await filenBridge.login(email, password, twoFactorCode ?? "XXXXXX")
 
 			await this.setup({
 				isAuthed: true,
@@ -265,10 +261,7 @@ export class AuthService {
 		}
 
 		try {
-			await filenBridge.proxy("register", {
-				email,
-				password
-			})
+			await filenBridge.register(email, password)
 
 			if (!disableAlert) {
 				alerts.normal(t("auth.registrationSuccessful"))
@@ -321,9 +314,7 @@ export class AuthService {
 		}
 
 		try {
-			await filenBridge.proxy("resendConfirmation", {
-				email
-			})
+			await filenBridge.resendConfirmation(email)
 
 			if (!disableAlert) {
 				alerts.normal(t("auth.prompts.resendConfirmation.success"))
@@ -376,9 +367,7 @@ export class AuthService {
 		}
 
 		try {
-			await filenBridge.proxy("forgotPassword", {
-				email
-			})
+			await filenBridge.forgotPassword(email)
 
 			if (!disableAlert) {
 				alerts.normal(t("auth.prompts.forgotPassword.success"))

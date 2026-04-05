@@ -47,16 +47,14 @@ export async function fetchData(params: UseDriveItemsQueryParams): Promise<Drive
 			return []
 		}
 
-		const remotePath = await filenBridge.proxy("directoryUUIDToPath", {
-			uuid: state.remote.uuid
-		})
+		const remotePath = await filenBridge.directoryUUIDToPath(state.remote.uuid)
 
 		if (!remotePath) {
 			return []
 		}
 	}
 
-	const items = ((await filenBridge.proxy("fetchCloudItems", params)) as DriveCloudItem[]).map((item: DriveCloudItem) => ({
+	const items = ((await filenBridge.fetchCloudItems(params.of, params.parent, params.receiverId)) as DriveCloudItem[]).map((item: DriveCloudItem) => ({
 		...item,
 		thumbnail: cache.availableThumbnails.get(item.uuid)
 	}))

@@ -14,7 +14,7 @@ export type UseChatMessagesQueryParams = {
 }
 
 export async function fetchData(params: UseChatMessagesQueryParams): Promise<ChatMessage[]> {
-	return await filenBridge.proxy("fetchChatMessages", params)
+	return await filenBridge.fetchChatMessages(params.conversation, params.timestamp)
 }
 
 export function useChatMessagesQuery(

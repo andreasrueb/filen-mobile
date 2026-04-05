@@ -152,7 +152,7 @@ export const Search = memo(({ queryParams }: { queryParams: FetchCloudItemsParam
 		setIsLoading(true)
 
 		try {
-			const result = await filenBridge.proxy("queryGlobalSearch", searchValue)
+			const result = await filenBridge.queryGlobalSearch(searchValue)
 
 			setResults(result)
 		} catch (e) {

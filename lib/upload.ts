@@ -68,7 +68,7 @@ export class Upload {
 				}))
 			}
 
-			return await filenBridge.proxy("uploadDirectory", params)
+			return await filenBridge.uploadDirectory(params)
 		},
 		background: async (): Promise<void> => {
 			throw new Error("Background directory upload is not implemented yet.")
@@ -100,7 +100,7 @@ export class Upload {
 			}
 
 			const wantsToDeleteAfterUpload = params.deleteAfterUpload ?? false
-			const item = await filenBridge.proxy("uploadFile", {
+			const item = await filenBridge.uploadFile({
 				...params,
 				deleteAfterUpload: false
 			})
@@ -142,7 +142,7 @@ export class Upload {
 			}
 
 			const wantsToDeleteAfterUpload = params.deleteAfterUpload ?? false
-			const item: DriveCloudItem = await filenBridge.proxy("uploadFile", {
+			const item = await filenBridge.uploadFile({
 				...params,
 				deleteAfterUpload: false
 			})

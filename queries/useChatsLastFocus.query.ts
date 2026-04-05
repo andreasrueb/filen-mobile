@@ -8,7 +8,7 @@ import type { ChatLastFocusValues } from "@filen/sdk/dist/types/api/v3/chat/last
 export const BASE_QUERY_KEY = "useChatsLastFocusQuery"
 
 export async function fetchData(): Promise<ChatLastFocusValues[]> {
-	return await filenBridge.proxy("fetchChatsLastFocus", undefined)
+	return await filenBridge.fetchChatsLastFocus()
 }
 
 export function useChatsLastFocusQuery(

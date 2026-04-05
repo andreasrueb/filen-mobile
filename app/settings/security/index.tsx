@@ -173,10 +173,7 @@ export const Security = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("changePassword", {
-				currentPassword: request.currentPassword,
-				newPassword: request.newPassword
-			})
+			await filenBridge.changePassword(request.currentPassword, request.newPassword)
 
 			await authService.logout({
 				disableAlertPrompt: true,
@@ -223,7 +220,7 @@ export const Security = memo(() => {
 
 		try {
 			await authService.exportMasterKeys({})
-			await filenBridge.proxy("didExportMasterKeys", undefined)
+			await filenBridge.didExportMasterKeys()
 		} catch (e) {
 			console.error(e)
 

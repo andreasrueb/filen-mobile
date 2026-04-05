@@ -26,7 +26,7 @@ export const Listeners = memo(() => {
 			const alive = await filenBridge.httpServerAlive()
 
 			if (!alive) {
-				const httpServerInfo = await filenBridge.proxy("restartHTTPServer", undefined)
+				const httpServerInfo = await filenBridge.restartHTTPServer()
 
 				filenBridge.httpAuthToken = httpServerInfo.authToken
 				filenBridge.httpServerPort = httpServerInfo.port

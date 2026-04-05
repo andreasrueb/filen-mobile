@@ -66,7 +66,7 @@ export class Download {
 				}))
 			}
 
-			await filenBridge.proxy("downloadDirectory", {
+			await filenBridge.downloadDirectory({
 				id: params.id ?? randomUUID(),
 				uuid: params.uuid,
 				destination: destination.uri,
@@ -93,7 +93,7 @@ export class Download {
 				destination.delete()
 			}
 
-			await filenBridge.proxy("downloadDirectory", {
+			await filenBridge.downloadDirectory({
 				id: params.id ?? randomUUID(),
 				uuid: params.uuid,
 				destination: destination.uri,
@@ -135,7 +135,7 @@ export class Download {
 				}))
 			}
 
-			await filenBridge.proxy("downloadFile", params)
+			await filenBridge.downloadFile(params)
 
 			if (!destination.exists) {
 				throw new Error("File download failed, file does not exist after download.")
@@ -165,7 +165,7 @@ export class Download {
 				destination.delete()
 			}
 
-			await filenBridge.proxy("downloadFile", params)
+			await filenBridge.downloadFile(params)
 
 			if (!destination.exists) {
 				throw new Error("File download failed, file does not exist after download.")

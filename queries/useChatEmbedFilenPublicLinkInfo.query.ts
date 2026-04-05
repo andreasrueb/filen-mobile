@@ -20,7 +20,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkInfoQueryPara
 	}
 
 	if (params.publicLink.type === "directory") {
-		const info = await filenBridge.proxy("directoryPublicLinkInfo", {
+		const info = await filenBridge.directoryPublicLinkInfo({
 			uuid: params.publicLink.uuid,
 			key: params.publicLink.key
 		})
@@ -32,7 +32,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkInfoQueryPara
 			}
 		} as const
 	} else {
-		const password = await filenBridge.proxy("filePublicLinkHasPassword", {
+		const password = await filenBridge.filePublicLinkHasPassword({
 			uuid: params.publicLink.uuid
 		})
 
@@ -40,7 +40,7 @@ export async function fetchData(params: UseChatEmbedFilenPublicLinkInfoQueryPara
 			return null
 		}
 
-		const info = await filenBridge.proxy("filePublicLinkInfo", {
+		const info = await filenBridge.filePublicLinkInfo({
 			uuid: params.publicLink.uuid,
 			key: params.publicLink.key
 		})

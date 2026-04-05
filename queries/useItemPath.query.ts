@@ -12,14 +12,10 @@ export type UseItemPathQueryParams = {
 
 export async function fetchData(params: UseItemPathQueryParams) {
 	if (params.item.type === "file") {
-		return await filenBridge.proxy("fileUUIDToPath", {
-			uuid: params.item.uuid
-		})
+		return await filenBridge.fileUUIDToPath(params.item.uuid)
 	}
 
-	return filenBridge.proxy("directoryUUIDToPath", {
-		uuid: params.item.uuid
-	})
+	return filenBridge.directoryUUIDToPath(params.item.uuid)
 }
 
 export function useItemPathQuery(

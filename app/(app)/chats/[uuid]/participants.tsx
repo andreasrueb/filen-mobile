@@ -200,10 +200,7 @@ export default function Participants() {
 		try {
 			const addedParticipants = await Promise.all(
 				filtered.map(async contact => {
-					await filenBridge.proxy("addChatParticipant", {
-						conversation: chat.uuid,
-						contact
-					})
+					await filenBridge.addChatParticipant(chat.uuid, contact)
 
 					return {
 						userId: contact.userId,

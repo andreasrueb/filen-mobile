@@ -72,15 +72,13 @@ export const Tag = memo(
 			fullScreenLoadingModal.show()
 
 			try {
-				const uuid = await filenBridge.proxy("createNoteTag", {
-					name
-				})
+				const result = await filenBridge.createNoteTag(name)
 
 				notesTagsQueryUpdate({
 					updater: prev => [
-						...prev.filter(t => t.uuid !== uuid),
+						...prev.filter(t => t.uuid !== result.uuid),
 						{
-							uuid,
+							uuid: result.uuid,
 							name,
 							favorite: false,
 							editedTimestamp: Date.now(),

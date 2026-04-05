@@ -95,9 +95,7 @@ export const Account = memo(() => {
 					throw new Error(translateMemoized("settings.account.errors.avatarLimit"))
 				}
 
-				await filenBridge.proxy("uploadAvatar", {
-					uri: normalizeFilePathForNode(tmpFile.uri)
-				})
+				await filenBridge.uploadAvatar(normalizeFilePathForNode(tmpFile.uri))
 
 				await account.refetch()
 			} finally {
@@ -146,9 +144,7 @@ export const Account = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await filenBridge.proxy("toggleVersioning", {
-					enabled: value
-				})
+				await filenBridge.toggleVersioning(value)
 
 				await account.refetch()
 			} catch (e) {
@@ -169,9 +165,7 @@ export const Account = memo(() => {
 			fullScreenLoadingModal.show()
 
 			try {
-				await filenBridge.proxy("toggleLoginAlerts", {
-					enabled: value
-				})
+				await filenBridge.toggleLoginAlerts(value)
 
 				await account.refetch()
 			} catch (e) {
@@ -220,7 +214,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("updateNickname", {
+			await filenBridge.updateNickname({
 				nickname
 			})
 
@@ -321,7 +315,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("changeEmail", {
+			await filenBridge.changeEmail({
 				email: request.email,
 				password: request.password
 			})
@@ -350,7 +344,7 @@ export const Account = memo(() => {
 					tmpFile.delete()
 				}
 
-				const content = await filenBridge.proxy("fetchGDPR", undefined)
+				const content = await filenBridge.fetchGDPR()
 
 				tmpFile.write(JSON.stringify(content, null, 4), {
 					encoding: "utf8"
@@ -400,7 +394,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("deleteAllVersionedFiles", undefined)
+			await filenBridge.deleteAllVersionedFiles()
 
 			await account.refetch()
 		} catch (e) {
@@ -436,7 +430,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("deleteEverything", undefined)
+			await filenBridge.deleteEverything()
 
 			await account.refetch()
 		} catch (e) {
@@ -490,9 +484,7 @@ export const Account = memo(() => {
 		fullScreenLoadingModal.show()
 
 		try {
-			await filenBridge.proxy("deleteAccount", {
-				twoFactorCode
-			})
+			await filenBridge.deleteAccount(twoFactorCode)
 
 			await account.refetch()
 		} catch (e) {
