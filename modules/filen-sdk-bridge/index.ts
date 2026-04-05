@@ -3,47 +3,47 @@ import { NitroModules, type HybridObject } from "react-native-nitro-modules"
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	// Auth
-	login(paramsJson: string): Promise<string>
-	register(paramsJson: string): Promise<void>
+	login(email: string, password: string, twoFactorCode: string | undefined): Promise<string>
+	register(email: string, password: string): Promise<void>
 	reinitSDK(paramsJson: string): Promise<void>
-	resendConfirmation(paramsJson: string): Promise<void>
-	forgotPassword(paramsJson: string): Promise<void>
+	resendConfirmation(email: string): Promise<void>
+	forgotPassword(email: string): Promise<void>
 	// Cloud: Directory operations
-	createDirectory(paramsJson: string): Promise<string>
-	getDirectory(paramsJson: string): Promise<string>
-	deleteDirectory(paramsJson: string): Promise<void>
-	trashDirectory(paramsJson: string): Promise<void>
-	restoreDirectory(paramsJson: string): Promise<void>
-	directoryExists(paramsJson: string): Promise<string>
-	renameDirectory(paramsJson: string): Promise<void>
-	moveDirectory(paramsJson: string): Promise<void>
-	changeDirectoryColor(paramsJson: string): Promise<void>
-	favoriteDirectory(paramsJson: string): Promise<void>
-	editDirectoryMetadata(paramsJson: string): Promise<void>
-	fetchDirectorySize(paramsJson: string): Promise<string>
-	getDirectoryTree(paramsJson: string): Promise<string>
-	directoryUUIDToPath(paramsJson: string): Promise<string>
-	directoryPublicLinkStatus(paramsJson: string): Promise<string>
+	createDirectory(parent: string, name: string): Promise<string>
+	getDirectory(uuid: string): Promise<string>
+	deleteDirectory(uuid: string): Promise<void>
+	trashDirectory(uuid: string): Promise<void>
+	restoreDirectory(uuid: string): Promise<void>
+	directoryExists(name: string, parent: string): Promise<string>
+	renameDirectory(uuid: string, name: string): Promise<void>
+	moveDirectory(uuid: string, to: string): Promise<void>
+	changeDirectoryColor(uuid: string, color: string): Promise<void>
+	favoriteDirectory(uuid: string, favorite: boolean): Promise<void>
+	editDirectoryMetadata(uuid: string, metadataName: string): Promise<void>
+	fetchDirectorySize(uuid: string): Promise<string>
+	getDirectoryTree(uuid: string): Promise<string>
+	directoryUUIDToPath(uuid: string): Promise<string>
+	directoryPublicLinkStatus(uuid: string): Promise<string>
 	// Cloud: File operations
-	getFile(paramsJson: string): Promise<string>
-	deleteFile(paramsJson: string): Promise<void>
-	trashFile(paramsJson: string): Promise<void>
-	restoreFile(paramsJson: string): Promise<void>
-	fileExists(paramsJson: string): Promise<string>
-	renameFile(paramsJson: string): Promise<void>
-	moveFile(paramsJson: string): Promise<void>
-	favoriteFile(paramsJson: string): Promise<void>
-	editFileMetadata(paramsJson: string): Promise<void>
-	fileUUIDToPath(paramsJson: string): Promise<string>
-	filePublicLinkStatus(paramsJson: string): Promise<string>
+	getFile(uuid: string): Promise<string>
+	deleteFile(uuid: string): Promise<void>
+	trashFile(uuid: string): Promise<void>
+	restoreFile(uuid: string): Promise<void>
+	fileExists(name: string, parent: string): Promise<string>
+	renameFile(uuid: string, name: string): Promise<void>
+	moveFile(uuid: string, to: string): Promise<void>
+	favoriteFile(uuid: string, favorite: boolean): Promise<void>
+	editFileMetadata(uuid: string, metadataName: string, metadataMime: string | undefined): Promise<void>
+	fileUUIDToPath(uuid: string): Promise<string>
+	filePublicLinkStatus(uuid: string): Promise<string>
 	// Cloud: Listing & search
-	fetchCloudItems(paramsJson: string): Promise<string>
-	queryGlobalSearch(paramsJson: string): Promise<string>
+	fetchCloudItems(of: string, parent: string, receiverId: number): Promise<string>
+	queryGlobalSearch(query: string): Promise<string>
 	// Cloud: Public links
 	toggleItemPublicLink(paramsJson: string): Promise<string>
 	// Cloud: Sharing
-	stopSharingItem(paramsJson: string): Promise<void>
-	removeSharedItem(paramsJson: string): Promise<void>
+	stopSharingItem(uuid: string, receiverId: number): Promise<void>
+	removeSharedItem(uuid: string): Promise<void>
 	shareItems(paramsJson: string): Promise<void>
 	// Cloud: Public link details
 	editItemPublicLink(paramsJson: string): Promise<void>
@@ -55,100 +55,100 @@ export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	fetchFileVersions(paramsJson: string): Promise<string>
 	restoreFileVersion(paramsJson: string): Promise<void>
 	// Cloud: Crypto
-	decryptDirectoryPublicLinkKey(paramsJson: string): Promise<string>
+	decryptDirectoryPublicLinkKey(metadata: string): Promise<string>
 	// Contacts
-	fetchContacts(paramsJson: string): Promise<string>
-	fetchIncomingContactRequests(paramsJson: string): Promise<string>
-	fetchOutgoingContactRequests(paramsJson: string): Promise<string>
-	acceptContactRequest(paramsJson: string): Promise<void>
-	denyContactRequest(paramsJson: string): Promise<void>
-	sendContactRequest(paramsJson: string): Promise<void>
-	removeContact(paramsJson: string): Promise<void>
-	blockContact(paramsJson: string): Promise<void>
-	unblockContact(paramsJson: string): Promise<void>
-	deleteOutgoingContactRequest(paramsJson: string): Promise<void>
+	fetchContacts(type: string): Promise<string>
+	fetchIncomingContactRequests(): Promise<string>
+	fetchOutgoingContactRequests(): Promise<string>
+	acceptContactRequest(uuid: string): Promise<void>
+	denyContactRequest(uuid: string): Promise<void>
+	sendContactRequest(email: string): Promise<void>
+	removeContact(uuid: string): Promise<void>
+	blockContact(email: string): Promise<void>
+	unblockContact(uuid: string): Promise<void>
+	deleteOutgoingContactRequest(uuid: string): Promise<void>
 	// Chats
-	fetchChats(paramsJson: string): Promise<string>
+	fetchChats(): Promise<string>
 	createChat(paramsJson: string): Promise<string>
-	deleteChat(paramsJson: string): Promise<void>
-	leaveChat(paramsJson: string): Promise<void>
+	deleteChat(uuid: string): Promise<void>
+	leaveChat(uuid: string): Promise<void>
 	sendChatMessage(paramsJson: string): Promise<string>
-	editChatMessage(paramsJson: string): Promise<void>
-	deleteChatMessage(paramsJson: string): Promise<void>
-	disableChatMessageEmbeds(paramsJson: string): Promise<void>
-	editChatName(paramsJson: string): Promise<void>
-	sendChatTyping(paramsJson: string): Promise<void>
-	chatMarkAsRead(paramsJson: string): Promise<void>
-	chatOnline(paramsJson: string): Promise<string>
-	chatUnread(paramsJson: string): Promise<string>
-	chatUnreadCount(paramsJson: string): Promise<string>
+	editChatMessage(conversation: string, uuid: string, message: string): Promise<void>
+	deleteChatMessage(conversation: string, uuid: string): Promise<void>
+	disableChatMessageEmbeds(uuid: string, conversation: string): Promise<void>
+	editChatName(conversation: string, name: string): Promise<void>
+	sendChatTyping(conversation: string, type: string): Promise<void>
+	chatMarkAsRead(uuid: string): Promise<void>
+	chatOnline(uuid: string): Promise<string>
+	chatUnread(): Promise<string>
+	chatUnreadCount(uuid: string): Promise<string>
 	addChatParticipant(paramsJson: string): Promise<void>
 	removeChatParticipant(paramsJson: string): Promise<void>
-	fetchChatMessages(paramsJson: string): Promise<string>
-	fetchChatsLastFocus(paramsJson: string): Promise<string>
+	fetchChatMessages(conversation: string, timestamp: number): Promise<string>
+	fetchChatsLastFocus(): Promise<string>
 	updateChatsLastFocus(paramsJson: string): Promise<void>
-	muteChat(paramsJson: string): Promise<void>
-	decryptChatMessage(paramsJson: string): Promise<string>
+	muteChat(conversation: string, mute: boolean): Promise<void>
+	decryptChatMessage(conversation: string, message: string): Promise<string>
 	// Notes
-	fetchNotes(paramsJson: string): Promise<string>
-	fetchNoteContent(paramsJson: string): Promise<string>
-	createNote(paramsJson: string): Promise<string>
-	deleteNote(paramsJson: string): Promise<void>
-	archiveNote(paramsJson: string): Promise<void>
-	trashNote(paramsJson: string): Promise<void>
-	restoreNote(paramsJson: string): Promise<void>
-	duplicateNote(paramsJson: string): Promise<string>
-	renameNote(paramsJson: string): Promise<void>
-	editNote(paramsJson: string): Promise<void>
-	changeNoteType(paramsJson: string): Promise<void>
-	pinNote(paramsJson: string): Promise<void>
-	favoriteNote(paramsJson: string): Promise<void>
-	fetchNoteHistory(paramsJson: string): Promise<string>
-	restoreNoteHistory(paramsJson: string): Promise<void>
-	addNoteParticipant(paramsJson: string): Promise<void>
-	removeNoteParticipant(paramsJson: string): Promise<void>
-	changeNoteParticipantPermissions(paramsJson: string): Promise<void>
-	fetchNotesTags(paramsJson: string): Promise<string>
-	createNoteTag(paramsJson: string): Promise<string>
-	deleteNoteTag(paramsJson: string): Promise<void>
-	renameNoteTag(paramsJson: string): Promise<void>
-	favoriteNoteTag(paramsJson: string): Promise<void>
-	tagNote(paramsJson: string): Promise<void>
-	untagNote(paramsJson: string): Promise<void>
+	fetchNotes(): Promise<string>
+	fetchNoteContent(uuid: string): Promise<string>
+	createNote(title: string | undefined): Promise<string>
+	deleteNote(uuid: string): Promise<void>
+	archiveNote(uuid: string): Promise<void>
+	trashNote(uuid: string): Promise<void>
+	restoreNote(uuid: string): Promise<void>
+	duplicateNote(uuid: string): Promise<string>
+	renameNote(uuid: string, title: string): Promise<void>
+	editNote(uuid: string, content: string, preview: string): Promise<void>
+	changeNoteType(uuid: string, type: string, content: string | undefined): Promise<void>
+	pinNote(uuid: string, pin: boolean): Promise<void>
+	favoriteNote(uuid: string, favorite: boolean): Promise<void>
+	fetchNoteHistory(uuid: string): Promise<string>
+	restoreNoteHistory(uuid: string, id: number): Promise<void>
+	addNoteParticipant(uuid: string, contactUuid: string, permissionsWrite: boolean): Promise<void>
+	removeNoteParticipant(uuid: string, userId: number): Promise<void>
+	changeNoteParticipantPermissions(uuid: string, userId: number, permissionsWrite: boolean): Promise<void>
+	fetchNotesTags(): Promise<string>
+	createNoteTag(name: string): Promise<string>
+	deleteNoteTag(uuid: string): Promise<void>
+	renameNoteTag(uuid: string, name: string): Promise<void>
+	favoriteNoteTag(uuid: string, favorite: boolean): Promise<void>
+	tagNote(uuid: string, tag: string): Promise<void>
+	untagNote(uuid: string, tag: string): Promise<void>
 	// User
-	enableTwoFactorAuthentication(paramsJson: string): Promise<string>
-	disableTwoFactorAuthentication(paramsJson: string): Promise<void>
-	deleteAccount(paramsJson: string): Promise<void>
-	fetchUserPublicKey(paramsJson: string): Promise<string>
-	didExportMasterKeys(paramsJson: string): Promise<void>
-	fetchAccount(paramsJson: string): Promise<string>
-	changePassword(paramsJson: string): Promise<void>
+	enableTwoFactorAuthentication(twoFactorCode: string | undefined): Promise<string>
+	disableTwoFactorAuthentication(twoFactorCode: string | undefined): Promise<void>
+	deleteAccount(twoFactorCode: string | undefined): Promise<void>
+	fetchUserPublicKey(email: string): Promise<string>
+	didExportMasterKeys(): Promise<void>
+	fetchAccount(): Promise<string>
+	changePassword(currentPassword: string, newPassword: string): Promise<void>
 	updatePersonalInformation(paramsJson: string): Promise<void>
 	updateNickname(paramsJson: string): Promise<void>
 	changeEmail(paramsJson: string): Promise<void>
-	fetchGDPR(paramsJson: string): Promise<string>
-	toggleVersioning(paramsJson: string): Promise<void>
-	toggleLoginAlerts(paramsJson: string): Promise<void>
-	deleteAllVersionedFiles(paramsJson: string): Promise<void>
-	deleteEverything(paramsJson: string): Promise<void>
+	fetchGDPR(): Promise<string>
+	toggleVersioning(enable: boolean): Promise<void>
+	toggleLoginAlerts(enable: boolean): Promise<void>
+	deleteAllVersionedFiles(): Promise<void>
+	deleteEverything(): Promise<void>
 	fetchEvents(paramsJson: string): Promise<string>
 	fetchEvent(paramsJson: string): Promise<string>
-	uploadAvatar(paramsJson: string): Promise<void>
+	uploadAvatar(uri: string): Promise<void>
 	// FS
-	readFileAsString(paramsJson: string): Promise<string>
-	writeFileAsString(paramsJson: string): Promise<void>
+	readFileAsString(path: string): Promise<string>
+	writeFileAsString(path: string, content: string): Promise<void>
 	// Transfers
 	uploadFile(paramsJson: string): Promise<string>
 	downloadFile(paramsJson: string): Promise<void>
 	uploadDirectory(paramsJson: string): Promise<void>
 	downloadDirectory(paramsJson: string): Promise<void>
-	transferAction(paramsJson: string): Promise<string>
-	fetchTransfers(paramsJson: string): Promise<string>
+	transferAction(id: string, action: string): Promise<string>
+	fetchTransfers(): Promise<string>
 	// HTTP Server
-	startHttpServer(paramsJson: string): Promise<string>
-	stopHttpServer(paramsJson: string): Promise<void>
-	restartHTTPServer(paramsJson: string): Promise<string>
-	httpStatus(paramsJson: string): Promise<string>
+	startHttpServer(): Promise<string>
+	stopHttpServer(): Promise<void>
+	restartHTTPServer(): Promise<string>
+	httpStatus(): Promise<string>
 }
 
 export default NitroModules.createHybridObject<FilenSdkBridgeModuleType>("FilenSdkBridge")

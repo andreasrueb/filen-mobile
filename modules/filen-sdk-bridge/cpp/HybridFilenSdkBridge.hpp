@@ -4,6 +4,8 @@
 #include <NitroModules/Promise.hpp>
 #include <memory>
 #include <string>
+#include <optional>
+#include <sstream>
 #include <stdexcept>
 
 // Rust FFI header
@@ -30,6 +32,74 @@ struct FfiResultGuard {
     }
     FfiResultGuard(const FfiResultGuard&) = delete;
     FfiResultGuard& operator=(const FfiResultGuard&) = delete;
+};
+
+// ── JSON builder for constructing param strings ────────────────────
+// Builds a JSON object from typed C++ values to pass to Rust FFI.
+
+class JsonBuilder {
+    std::ostringstream ss_;
+    bool first_ = true;
+
+    void sep() { if (!first_) ss_ << ','; first_ = false; }
+
+    static std::string escape(const std::string& s) {
+        std::string r;
+        r.reserve(s.size());
+        for (char c : s) {
+            switch (c) {
+                case '"':  r += "\\\""; break;
+                case '\\': r += "\\\\"; break;
+                case '\b': r += "\\b"; break;
+                case '\f': r += "\\f"; break;
+                case '\n': r += "\\n"; break;
+                case '\r': r += "\\r"; break;
+                case '\t': r += "\\t"; break;
+                default:
+                    if (static_cast<unsigned char>(c) < 0x20) {
+                        char buf[8];
+                        snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned char>(c));
+                        r += buf;
+                    } else {
+                        r += c;
+                    }
+            }
+        }
+        return r;
+    }
+
+public:
+    JsonBuilder() { ss_ << '{'; }
+
+    JsonBuilder& str(const char* key, const std::string& val) {
+        sep(); ss_ << '"' << key << "\":\"" << escape(val) << '"';
+        return *this;
+    }
+
+    JsonBuilder& str(const char* key, const std::optional<std::string>& val) {
+        if (val.has_value()) return str(key, *val);
+        return *this;
+    }
+
+    JsonBuilder& num(const char* key, double val) {
+        sep(); ss_ << '"' << key << "\":" << val;
+        return *this;
+    }
+
+    JsonBuilder& boolean(const char* key, bool val) {
+        sep(); ss_ << '"' << key << "\":" << (val ? "true" : "false");
+        return *this;
+    }
+
+    JsonBuilder& raw(const char* key, const std::string& rawJson) {
+        sep(); ss_ << '"' << key << "\":" << rawJson;
+        return *this;
+    }
+
+    std::string build() {
+        ss_ << '}';
+        return ss_.str();
+    }
 };
 
 class HybridFilenSdkBridge : public HybridObject {
@@ -228,53 +298,128 @@ private:
         });
     }
 
-    // ── Method implementations ──────────────────────────────────────────
+    // ── Method implementations ───────────────────���──────────────────────
 
     // Auth
-    std::shared_ptr<Promise<std::string>> login(const std::string& p) { return callString(filen_bridge_login, p); }
-    std::shared_ptr<Promise<void>> register_(const std::string& p) { return callVoid(filen_bridge_register, p); }
+    std::shared_ptr<Promise<std::string>> login(const std::string& email, const std::string& password, std::optional<std::string> twoFactorCode) {
+        return callString(filen_bridge_login, JsonBuilder().str("email", email).str("password", password).str("twoFactorCode", twoFactorCode).build());
+    }
+    std::shared_ptr<Promise<void>> register_(const std::string& email, const std::string& password) {
+        return callVoid(filen_bridge_register, JsonBuilder().str("email", email).str("password", password).build());
+    }
     std::shared_ptr<Promise<void>> reinitSDK(const std::string& p) { return callVoid(filen_bridge_reinit_sdk, p); }
-    std::shared_ptr<Promise<void>> resendConfirmation(const std::string& p) { return callVoid(filen_bridge_resend_confirmation, p); }
-    std::shared_ptr<Promise<void>> forgotPassword(const std::string& p) { return callVoid(filen_bridge_forgot_password, p); }
+    std::shared_ptr<Promise<void>> resendConfirmation(const std::string& email) {
+        return callVoid(filen_bridge_resend_confirmation, JsonBuilder().str("email", email).build());
+    }
+    std::shared_ptr<Promise<void>> forgotPassword(const std::string& email) {
+        return callVoid(filen_bridge_forgot_password, JsonBuilder().str("email", email).build());
+    }
 
     // Cloud: Dirs
-    std::shared_ptr<Promise<std::string>> createDirectory(const std::string& p) { return callString(filen_bridge_create_directory, p); }
-    std::shared_ptr<Promise<std::string>> getDirectory(const std::string& p) { return callString(filen_bridge_get_directory, p); }
-    std::shared_ptr<Promise<void>> deleteDirectory(const std::string& p) { return callVoid(filen_bridge_delete_directory, p); }
-    std::shared_ptr<Promise<void>> trashDirectory(const std::string& p) { return callVoid(filen_bridge_trash_directory, p); }
-    std::shared_ptr<Promise<void>> restoreDirectory(const std::string& p) { return callVoid(filen_bridge_restore_directory, p); }
-    std::shared_ptr<Promise<std::string>> directoryExists(const std::string& p) { return callString(filen_bridge_directory_exists, p); }
-    std::shared_ptr<Promise<void>> renameDirectory(const std::string& p) { return callVoid(filen_bridge_rename_directory, p); }
-    std::shared_ptr<Promise<void>> moveDirectory(const std::string& p) { return callVoid(filen_bridge_move_directory, p); }
-    std::shared_ptr<Promise<void>> changeDirectoryColor(const std::string& p) { return callVoid(filen_bridge_change_directory_color, p); }
-    std::shared_ptr<Promise<void>> favoriteDirectory(const std::string& p) { return callVoid(filen_bridge_favorite_directory, p); }
-    std::shared_ptr<Promise<void>> editDirectoryMetadata(const std::string& p) { return callVoid(filen_bridge_edit_directory_metadata, p); }
-    std::shared_ptr<Promise<std::string>> fetchDirectorySize(const std::string& p) { return callString(filen_bridge_fetch_directory_size, p); }
-    std::shared_ptr<Promise<std::string>> getDirectoryTree(const std::string& p) { return callString(filen_bridge_get_directory_tree, p); }
-    std::shared_ptr<Promise<std::string>> directoryUUIDToPath(const std::string& p) { return callString(filen_bridge_directory_uuid_to_path, p); }
-    std::shared_ptr<Promise<std::string>> directoryPublicLinkStatus(const std::string& p) { return callString(filen_bridge_directory_public_link_status, p); }
+    std::shared_ptr<Promise<std::string>> createDirectory(const std::string& parent, const std::string& name) {
+        return callString(filen_bridge_create_directory, JsonBuilder().str("parent", parent).str("name", name).build());
+    }
+    std::shared_ptr<Promise<std::string>> getDirectory(const std::string& uuid) {
+        return callString(filen_bridge_get_directory, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> deleteDirectory(const std::string& uuid) {
+        return callVoid(filen_bridge_delete_directory, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> trashDirectory(const std::string& uuid) {
+        return callVoid(filen_bridge_trash_directory, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> restoreDirectory(const std::string& uuid) {
+        return callVoid(filen_bridge_restore_directory, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> directoryExists(const std::string& name, const std::string& parent) {
+        return callString(filen_bridge_directory_exists, JsonBuilder().str("name", name).str("parent", parent).build());
+    }
+    std::shared_ptr<Promise<void>> renameDirectory(const std::string& uuid, const std::string& name) {
+        return callVoid(filen_bridge_rename_directory, JsonBuilder().str("uuid", uuid).str("name", name).build());
+    }
+    std::shared_ptr<Promise<void>> moveDirectory(const std::string& uuid, const std::string& to) {
+        return callVoid(filen_bridge_move_directory, JsonBuilder().str("uuid", uuid).str("to", to).build());
+    }
+    std::shared_ptr<Promise<void>> changeDirectoryColor(const std::string& uuid, const std::string& color) {
+        return callVoid(filen_bridge_change_directory_color, JsonBuilder().str("uuid", uuid).str("color", color).build());
+    }
+    std::shared_ptr<Promise<void>> favoriteDirectory(const std::string& uuid, bool favorite) {
+        return callVoid(filen_bridge_favorite_directory, JsonBuilder().str("uuid", uuid).boolean("favorite", favorite).build());
+    }
+    std::shared_ptr<Promise<void>> editDirectoryMetadata(const std::string& uuid, const std::string& metadataName) {
+        return callVoid(filen_bridge_edit_directory_metadata,
+            std::string("{\"uuid\":\"") + JsonBuilder::escapePublic(uuid) + "\",\"metadata\":{\"name\":\"" + JsonBuilder::escapePublic(metadataName) + "\"}}");
+    }
+    std::shared_ptr<Promise<std::string>> fetchDirectorySize(const std::string& uuid) {
+        return callString(filen_bridge_fetch_directory_size, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> getDirectoryTree(const std::string& uuid) {
+        return callString(filen_bridge_get_directory_tree, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> directoryUUIDToPath(const std::string& uuid) {
+        return callString(filen_bridge_directory_uuid_to_path, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> directoryPublicLinkStatus(const std::string& uuid) {
+        return callString(filen_bridge_directory_public_link_status, JsonBuilder().str("uuid", uuid).build());
+    }
 
     // Cloud: Files
-    std::shared_ptr<Promise<std::string>> getFile(const std::string& p) { return callString(filen_bridge_get_file, p); }
-    std::shared_ptr<Promise<void>> deleteFile(const std::string& p) { return callVoid(filen_bridge_delete_file, p); }
-    std::shared_ptr<Promise<void>> trashFile(const std::string& p) { return callVoid(filen_bridge_trash_file, p); }
-    std::shared_ptr<Promise<void>> restoreFile(const std::string& p) { return callVoid(filen_bridge_restore_file, p); }
-    std::shared_ptr<Promise<std::string>> fileExists(const std::string& p) { return callString(filen_bridge_file_exists, p); }
-    std::shared_ptr<Promise<void>> renameFile(const std::string& p) { return callVoid(filen_bridge_rename_file, p); }
-    std::shared_ptr<Promise<void>> moveFile(const std::string& p) { return callVoid(filen_bridge_move_file, p); }
-    std::shared_ptr<Promise<void>> favoriteFile(const std::string& p) { return callVoid(filen_bridge_favorite_file, p); }
-    std::shared_ptr<Promise<void>> editFileMetadata(const std::string& p) { return callVoid(filen_bridge_edit_file_metadata, p); }
-    std::shared_ptr<Promise<std::string>> fileUUIDToPath(const std::string& p) { return callString(filen_bridge_file_uuid_to_path, p); }
-    std::shared_ptr<Promise<std::string>> filePublicLinkStatus(const std::string& p) { return callString(filen_bridge_file_public_link_status, p); }
+    std::shared_ptr<Promise<std::string>> getFile(const std::string& uuid) {
+        return callString(filen_bridge_get_file, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> deleteFile(const std::string& uuid) {
+        return callVoid(filen_bridge_delete_file, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> trashFile(const std::string& uuid) {
+        return callVoid(filen_bridge_trash_file, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> restoreFile(const std::string& uuid) {
+        return callVoid(filen_bridge_restore_file, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> fileExists(const std::string& name, const std::string& parent) {
+        return callString(filen_bridge_file_exists, JsonBuilder().str("name", name).str("parent", parent).build());
+    }
+    std::shared_ptr<Promise<void>> renameFile(const std::string& uuid, const std::string& name) {
+        return callVoid(filen_bridge_rename_file, JsonBuilder().str("uuid", uuid).str("name", name).build());
+    }
+    std::shared_ptr<Promise<void>> moveFile(const std::string& uuid, const std::string& to) {
+        return callVoid(filen_bridge_move_file, JsonBuilder().str("uuid", uuid).str("to", to).build());
+    }
+    std::shared_ptr<Promise<void>> favoriteFile(const std::string& uuid, bool favorite) {
+        return callVoid(filen_bridge_favorite_file, JsonBuilder().str("uuid", uuid).boolean("favorite", favorite).build());
+    }
+    std::shared_ptr<Promise<void>> editFileMetadata(const std::string& uuid, const std::string& metadataName, std::optional<std::string> metadataMime) {
+        std::string metaObj = "{\"name\":\"" + JsonBuilder::escapePublic(metadataName) + "\"";
+        if (metadataMime.has_value()) {
+            metaObj += ",\"mime\":\"" + JsonBuilder::escapePublic(*metadataMime) + "\"";
+        }
+        metaObj += "}";
+        return callVoid(filen_bridge_edit_file_metadata, JsonBuilder().str("uuid", uuid).raw("metadata", metaObj).build());
+    }
+    std::shared_ptr<Promise<std::string>> fileUUIDToPath(const std::string& uuid) {
+        return callString(filen_bridge_file_uuid_to_path, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> filePublicLinkStatus(const std::string& uuid) {
+        return callString(filen_bridge_file_public_link_status, JsonBuilder().str("uuid", uuid).build());
+    }
 
     // Cloud: Listing
-    std::shared_ptr<Promise<std::string>> fetchCloudItems(const std::string& p) { return callString(filen_bridge_fetch_cloud_items, p); }
-    std::shared_ptr<Promise<std::string>> queryGlobalSearch(const std::string& p) { return callString(filen_bridge_query_global_search, p); }
+    std::shared_ptr<Promise<std::string>> fetchCloudItems(const std::string& of, const std::string& parent, double receiverId) {
+        return callString(filen_bridge_fetch_cloud_items, JsonBuilder().str("of", of).str("parent", parent).num("receiverId", receiverId).build());
+    }
+    std::shared_ptr<Promise<std::string>> queryGlobalSearch(const std::string& query) {
+        // Rust expects either a bare JSON string or the raw value
+        return callString(filen_bridge_query_global_search, "\"" + JsonBuilder::escapePublic(query) + "\"");
+    }
 
-    // Cloud: Public links & sharing
+    // Cloud: Public links & sharing (complex params — keep JSON)
     std::shared_ptr<Promise<std::string>> toggleItemPublicLink(const std::string& p) { return callString(filen_bridge_toggle_item_public_link, p); }
-    std::shared_ptr<Promise<void>> stopSharingItem(const std::string& p) { return callVoid(filen_bridge_stop_sharing_item, p); }
-    std::shared_ptr<Promise<void>> removeSharedItem(const std::string& p) { return callVoid(filen_bridge_remove_shared_item, p); }
+    std::shared_ptr<Promise<void>> stopSharingItem(const std::string& uuid, double receiverId) {
+        return callVoid(filen_bridge_stop_sharing_item, JsonBuilder().str("uuid", uuid).num("receiverId", receiverId).build());
+    }
+    std::shared_ptr<Promise<void>> removeSharedItem(const std::string& uuid) {
+        return callVoid(filen_bridge_remove_shared_item, JsonBuilder().str("uuid", uuid).build());
+    }
     std::shared_ptr<Promise<void>> shareItems(const std::string& p) { return callVoid(filen_bridge_share_items, p); }
     std::shared_ptr<Promise<void>> editItemPublicLink(const std::string& p) { return callVoid(filen_bridge_edit_item_public_link, p); }
     std::shared_ptr<Promise<std::string>> filePublicLinkInfo(const std::string& p) { return callString(filen_bridge_file_public_link_info, p); }
@@ -283,107 +428,258 @@ private:
     std::shared_ptr<Promise<std::string>> directorySizePublicLink(const std::string& p) { return callString(filen_bridge_directory_size_public_link, p); }
     std::shared_ptr<Promise<std::string>> fetchFileVersions(const std::string& p) { return callString(filen_bridge_fetch_file_versions, p); }
     std::shared_ptr<Promise<void>> restoreFileVersion(const std::string& p) { return callVoid(filen_bridge_restore_file_version, p); }
-    std::shared_ptr<Promise<std::string>> decryptDirectoryPublicLinkKey(const std::string& p) { return callString(filen_bridge_decrypt_directory_public_link_key, p); }
+    std::shared_ptr<Promise<std::string>> decryptDirectoryPublicLinkKey(const std::string& metadata) {
+        return callString(filen_bridge_decrypt_directory_public_link_key, JsonBuilder().str("metadata", metadata).build());
+    }
 
     // Contacts
-    std::shared_ptr<Promise<std::string>> fetchContacts(const std::string& p) { return callString(filen_bridge_fetch_contacts, p); }
-    std::shared_ptr<Promise<std::string>> fetchIncomingContactRequests(const std::string& p) { return callString(filen_bridge_fetch_incoming_contact_requests, p); }
-    std::shared_ptr<Promise<std::string>> fetchOutgoingContactRequests(const std::string& p) { return callString(filen_bridge_fetch_outgoing_contact_requests, p); }
-    std::shared_ptr<Promise<void>> acceptContactRequest(const std::string& p) { return callVoid(filen_bridge_accept_contact_request, p); }
-    std::shared_ptr<Promise<void>> denyContactRequest(const std::string& p) { return callVoid(filen_bridge_deny_contact_request, p); }
-    std::shared_ptr<Promise<void>> sendContactRequest(const std::string& p) { return callVoid(filen_bridge_send_contact_request, p); }
-    std::shared_ptr<Promise<void>> removeContact(const std::string& p) { return callVoid(filen_bridge_remove_contact, p); }
-    std::shared_ptr<Promise<void>> blockContact(const std::string& p) { return callVoid(filen_bridge_block_contact, p); }
-    std::shared_ptr<Promise<void>> unblockContact(const std::string& p) { return callVoid(filen_bridge_unblock_contact, p); }
-    std::shared_ptr<Promise<void>> deleteOutgoingContactRequest(const std::string& p) { return callVoid(filen_bridge_delete_outgoing_contact_request, p); }
+    std::shared_ptr<Promise<std::string>> fetchContacts(const std::string& type) {
+        return callString(filen_bridge_fetch_contacts, JsonBuilder().str("type", type).build());
+    }
+    std::shared_ptr<Promise<std::string>> fetchIncomingContactRequests() {
+        return callString(filen_bridge_fetch_incoming_contact_requests, "{}");
+    }
+    std::shared_ptr<Promise<std::string>> fetchOutgoingContactRequests() {
+        return callString(filen_bridge_fetch_outgoing_contact_requests, "{}");
+    }
+    std::shared_ptr<Promise<void>> acceptContactRequest(const std::string& uuid) {
+        return callVoid(filen_bridge_accept_contact_request, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> denyContactRequest(const std::string& uuid) {
+        return callVoid(filen_bridge_deny_contact_request, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> sendContactRequest(const std::string& email) {
+        return callVoid(filen_bridge_send_contact_request, JsonBuilder().str("email", email).build());
+    }
+    std::shared_ptr<Promise<void>> removeContact(const std::string& uuid) {
+        return callVoid(filen_bridge_remove_contact, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> blockContact(const std::string& email) {
+        return callVoid(filen_bridge_block_contact, JsonBuilder().str("email", email).build());
+    }
+    std::shared_ptr<Promise<void>> unblockContact(const std::string& uuid) {
+        return callVoid(filen_bridge_unblock_contact, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> deleteOutgoingContactRequest(const std::string& uuid) {
+        return callVoid(filen_bridge_delete_outgoing_contact_request, JsonBuilder().str("uuid", uuid).build());
+    }
 
     // Chats
-    std::shared_ptr<Promise<std::string>> fetchChats(const std::string& p) { return callString(filen_bridge_fetch_chats, p); }
+    std::shared_ptr<Promise<std::string>> fetchChats() { return callString(filen_bridge_fetch_chats, "{}"); }
     std::shared_ptr<Promise<std::string>> createChat(const std::string& p) { return callString(filen_bridge_create_chat, p); }
-    std::shared_ptr<Promise<void>> deleteChat(const std::string& p) { return callVoid(filen_bridge_delete_chat, p); }
-    std::shared_ptr<Promise<void>> leaveChat(const std::string& p) { return callVoid(filen_bridge_leave_chat, p); }
+    std::shared_ptr<Promise<void>> deleteChat(const std::string& uuid) {
+        return callVoid(filen_bridge_delete_chat, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> leaveChat(const std::string& uuid) {
+        return callVoid(filen_bridge_leave_chat, JsonBuilder().str("uuid", uuid).build());
+    }
     std::shared_ptr<Promise<std::string>> sendChatMessage(const std::string& p) { return callString(filen_bridge_send_chat_message, p); }
-    std::shared_ptr<Promise<void>> editChatMessage(const std::string& p) { return callVoid(filen_bridge_edit_chat_message, p); }
-    std::shared_ptr<Promise<void>> deleteChatMessage(const std::string& p) { return callVoid(filen_bridge_delete_chat_message, p); }
-    std::shared_ptr<Promise<void>> disableChatMessageEmbeds(const std::string& p) { return callVoid(filen_bridge_disable_chat_message_embeds, p); }
-    std::shared_ptr<Promise<void>> editChatName(const std::string& p) { return callVoid(filen_bridge_edit_chat_name, p); }
-    std::shared_ptr<Promise<void>> sendChatTyping(const std::string& p) { return callVoid(filen_bridge_send_chat_typing, p); }
-    std::shared_ptr<Promise<void>> chatMarkAsRead(const std::string& p) { return callVoid(filen_bridge_chat_mark_as_read, p); }
-    std::shared_ptr<Promise<std::string>> chatOnline(const std::string& p) { return callString(filen_bridge_chat_online, p); }
-    std::shared_ptr<Promise<std::string>> chatUnread(const std::string& p) { return callString(filen_bridge_chat_unread, p); }
-    std::shared_ptr<Promise<std::string>> chatUnreadCount(const std::string& p) { return callString(filen_bridge_chat_unread_count, p); }
+    std::shared_ptr<Promise<void>> editChatMessage(const std::string& conversation, const std::string& uuid, const std::string& message) {
+        return callVoid(filen_bridge_edit_chat_message, JsonBuilder().str("conversation", conversation).str("uuid", uuid).str("message", message).build());
+    }
+    std::shared_ptr<Promise<void>> deleteChatMessage(const std::string& conversation, const std::string& uuid) {
+        return callVoid(filen_bridge_delete_chat_message, JsonBuilder().str("conversation", conversation).str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> disableChatMessageEmbeds(const std::string& uuid, const std::string& conversation) {
+        return callVoid(filen_bridge_disable_chat_message_embeds, JsonBuilder().str("uuid", uuid).str("conversation", conversation).build());
+    }
+    std::shared_ptr<Promise<void>> editChatName(const std::string& conversation, const std::string& name) {
+        return callVoid(filen_bridge_edit_chat_name, JsonBuilder().str("conversation", conversation).str("name", name).build());
+    }
+    std::shared_ptr<Promise<void>> sendChatTyping(const std::string& conversation, const std::string& type) {
+        return callVoid(filen_bridge_send_chat_typing, JsonBuilder().str("conversation", conversation).str("type", type).build());
+    }
+    std::shared_ptr<Promise<void>> chatMarkAsRead(const std::string& uuid) {
+        return callVoid(filen_bridge_chat_mark_as_read, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> chatOnline(const std::string& uuid) {
+        return callString(filen_bridge_chat_online, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> chatUnread() { return callString(filen_bridge_chat_unread, "{}"); }
+    std::shared_ptr<Promise<std::string>> chatUnreadCount(const std::string& uuid) {
+        return callString(filen_bridge_chat_unread_count, JsonBuilder().str("uuid", uuid).build());
+    }
     std::shared_ptr<Promise<void>> addChatParticipant(const std::string& p) { return callVoid(filen_bridge_add_chat_participant, p); }
     std::shared_ptr<Promise<void>> removeChatParticipant(const std::string& p) { return callVoid(filen_bridge_remove_chat_participant, p); }
-    std::shared_ptr<Promise<std::string>> fetchChatMessages(const std::string& p) { return callString(filen_bridge_fetch_chat_messages, p); }
-    std::shared_ptr<Promise<std::string>> fetchChatsLastFocus(const std::string& p) { return callString(filen_bridge_fetch_chats_last_focus, p); }
+    std::shared_ptr<Promise<std::string>> fetchChatMessages(const std::string& conversation, double timestamp) {
+        return callString(filen_bridge_fetch_chat_messages, JsonBuilder().str("conversation", conversation).num("timestamp", timestamp).build());
+    }
+    std::shared_ptr<Promise<std::string>> fetchChatsLastFocus() { return callString(filen_bridge_fetch_chats_last_focus, "{}"); }
     std::shared_ptr<Promise<void>> updateChatsLastFocus(const std::string& p) { return callVoid(filen_bridge_update_chats_last_focus, p); }
-    std::shared_ptr<Promise<void>> muteChat(const std::string& p) { return callVoid(filen_bridge_mute_chat, p); }
-    std::shared_ptr<Promise<std::string>> decryptChatMessage(const std::string& p) { return callString(filen_bridge_decrypt_chat_message, p); }
+    std::shared_ptr<Promise<void>> muteChat(const std::string& conversation, bool mute) {
+        return callVoid(filen_bridge_mute_chat, JsonBuilder().str("conversation", conversation).boolean("mute", mute).build());
+    }
+    std::shared_ptr<Promise<std::string>> decryptChatMessage(const std::string& conversation, const std::string& message) {
+        return callString(filen_bridge_decrypt_chat_message, JsonBuilder().str("conversation", conversation).str("message", message).build());
+    }
 
     // Notes
-    std::shared_ptr<Promise<std::string>> fetchNotes(const std::string& p) { return callString(filen_bridge_fetch_notes, p); }
-    std::shared_ptr<Promise<std::string>> fetchNoteContent(const std::string& p) { return callString(filen_bridge_fetch_note_content, p); }
-    std::shared_ptr<Promise<std::string>> createNote(const std::string& p) { return callString(filen_bridge_create_note, p); }
-    std::shared_ptr<Promise<void>> deleteNote(const std::string& p) { return callVoid(filen_bridge_delete_note, p); }
-    std::shared_ptr<Promise<void>> archiveNote(const std::string& p) { return callVoid(filen_bridge_archive_note, p); }
-    std::shared_ptr<Promise<void>> trashNote(const std::string& p) { return callVoid(filen_bridge_trash_note, p); }
-    std::shared_ptr<Promise<void>> restoreNote(const std::string& p) { return callVoid(filen_bridge_restore_note, p); }
-    std::shared_ptr<Promise<std::string>> duplicateNote(const std::string& p) { return callString(filen_bridge_duplicate_note, p); }
-    std::shared_ptr<Promise<void>> renameNote(const std::string& p) { return callVoid(filen_bridge_rename_note, p); }
-    std::shared_ptr<Promise<void>> editNote(const std::string& p) { return callVoid(filen_bridge_edit_note, p); }
-    std::shared_ptr<Promise<void>> changeNoteType(const std::string& p) { return callVoid(filen_bridge_change_note_type, p); }
-    std::shared_ptr<Promise<void>> pinNote(const std::string& p) { return callVoid(filen_bridge_pin_note, p); }
-    std::shared_ptr<Promise<void>> favoriteNote(const std::string& p) { return callVoid(filen_bridge_favorite_note, p); }
-    std::shared_ptr<Promise<std::string>> fetchNoteHistory(const std::string& p) { return callString(filen_bridge_fetch_note_history, p); }
-    std::shared_ptr<Promise<void>> restoreNoteHistory(const std::string& p) { return callVoid(filen_bridge_restore_note_history, p); }
-    std::shared_ptr<Promise<void>> addNoteParticipant(const std::string& p) { return callVoid(filen_bridge_add_note_participant, p); }
-    std::shared_ptr<Promise<void>> removeNoteParticipant(const std::string& p) { return callVoid(filen_bridge_remove_note_participant, p); }
-    std::shared_ptr<Promise<void>> changeNoteParticipantPermissions(const std::string& p) { return callVoid(filen_bridge_change_note_participant_permissions, p); }
-    std::shared_ptr<Promise<std::string>> fetchNotesTags(const std::string& p) { return callString(filen_bridge_fetch_notes_tags, p); }
-    std::shared_ptr<Promise<std::string>> createNoteTag(const std::string& p) { return callString(filen_bridge_create_note_tag, p); }
-    std::shared_ptr<Promise<void>> deleteNoteTag(const std::string& p) { return callVoid(filen_bridge_delete_note_tag, p); }
-    std::shared_ptr<Promise<void>> renameNoteTag(const std::string& p) { return callVoid(filen_bridge_rename_note_tag, p); }
-    std::shared_ptr<Promise<void>> favoriteNoteTag(const std::string& p) { return callVoid(filen_bridge_favorite_note_tag, p); }
-    std::shared_ptr<Promise<void>> tagNote(const std::string& p) { return callVoid(filen_bridge_tag_note, p); }
-    std::shared_ptr<Promise<void>> untagNote(const std::string& p) { return callVoid(filen_bridge_untag_note, p); }
+    std::shared_ptr<Promise<std::string>> fetchNotes() { return callString(filen_bridge_fetch_notes, "{}"); }
+    std::shared_ptr<Promise<std::string>> fetchNoteContent(const std::string& uuid) {
+        return callString(filen_bridge_fetch_note_content, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> createNote(std::optional<std::string> title) {
+        auto b = JsonBuilder();
+        b.str("title", title);
+        return callString(filen_bridge_create_note, b.build());
+    }
+    std::shared_ptr<Promise<void>> deleteNote(const std::string& uuid) {
+        return callVoid(filen_bridge_delete_note, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> archiveNote(const std::string& uuid) {
+        return callVoid(filen_bridge_archive_note, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> trashNote(const std::string& uuid) {
+        return callVoid(filen_bridge_trash_note, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> restoreNote(const std::string& uuid) {
+        return callVoid(filen_bridge_restore_note, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<std::string>> duplicateNote(const std::string& uuid) {
+        return callString(filen_bridge_duplicate_note, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> renameNote(const std::string& uuid, const std::string& title) {
+        return callVoid(filen_bridge_rename_note, JsonBuilder().str("uuid", uuid).str("title", title).build());
+    }
+    std::shared_ptr<Promise<void>> editNote(const std::string& uuid, const std::string& content, const std::string& preview) {
+        return callVoid(filen_bridge_edit_note, JsonBuilder().str("uuid", uuid).str("content", content).str("preview", preview).build());
+    }
+    std::shared_ptr<Promise<void>> changeNoteType(const std::string& uuid, const std::string& type, std::optional<std::string> content) {
+        return callVoid(filen_bridge_change_note_type, JsonBuilder().str("uuid", uuid).str("type", type).str("content", content).build());
+    }
+    std::shared_ptr<Promise<void>> pinNote(const std::string& uuid, bool pin) {
+        return callVoid(filen_bridge_pin_note, JsonBuilder().str("uuid", uuid).boolean("pin", pin).build());
+    }
+    std::shared_ptr<Promise<void>> favoriteNote(const std::string& uuid, bool favorite) {
+        return callVoid(filen_bridge_favorite_note, JsonBuilder().str("uuid", uuid).boolean("favorite", favorite).build());
+    }
+    std::shared_ptr<Promise<std::string>> fetchNoteHistory(const std::string& uuid) {
+        return callString(filen_bridge_fetch_note_history, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> restoreNoteHistory(const std::string& uuid, double id) {
+        return callVoid(filen_bridge_restore_note_history, JsonBuilder().str("uuid", uuid).num("id", id).build());
+    }
+    std::shared_ptr<Promise<void>> addNoteParticipant(const std::string& uuid, const std::string& contactUuid, bool permissionsWrite) {
+        return callVoid(filen_bridge_add_note_participant, JsonBuilder().str("uuid", uuid).str("contactUuid", contactUuid).boolean("permissionsWrite", permissionsWrite).build());
+    }
+    std::shared_ptr<Promise<void>> removeNoteParticipant(const std::string& uuid, double userId) {
+        return callVoid(filen_bridge_remove_note_participant, JsonBuilder().str("uuid", uuid).num("userId", userId).build());
+    }
+    std::shared_ptr<Promise<void>> changeNoteParticipantPermissions(const std::string& uuid, double userId, bool permissionsWrite) {
+        return callVoid(filen_bridge_change_note_participant_permissions, JsonBuilder().str("uuid", uuid).num("userId", userId).boolean("permissionsWrite", permissionsWrite).build());
+    }
+    std::shared_ptr<Promise<std::string>> fetchNotesTags() { return callString(filen_bridge_fetch_notes_tags, "{}"); }
+    std::shared_ptr<Promise<std::string>> createNoteTag(const std::string& name) {
+        return callString(filen_bridge_create_note_tag, JsonBuilder().str("name", name).build());
+    }
+    std::shared_ptr<Promise<void>> deleteNoteTag(const std::string& uuid) {
+        return callVoid(filen_bridge_delete_note_tag, JsonBuilder().str("uuid", uuid).build());
+    }
+    std::shared_ptr<Promise<void>> renameNoteTag(const std::string& uuid, const std::string& name) {
+        return callVoid(filen_bridge_rename_note_tag, JsonBuilder().str("uuid", uuid).str("name", name).build());
+    }
+    std::shared_ptr<Promise<void>> favoriteNoteTag(const std::string& uuid, bool favorite) {
+        return callVoid(filen_bridge_favorite_note_tag, JsonBuilder().str("uuid", uuid).boolean("favorite", favorite).build());
+    }
+    std::shared_ptr<Promise<void>> tagNote(const std::string& uuid, const std::string& tag) {
+        return callVoid(filen_bridge_tag_note, JsonBuilder().str("uuid", uuid).str("tag", tag).build());
+    }
+    std::shared_ptr<Promise<void>> untagNote(const std::string& uuid, const std::string& tag) {
+        return callVoid(filen_bridge_untag_note, JsonBuilder().str("uuid", uuid).str("tag", tag).build());
+    }
 
     // User
-    std::shared_ptr<Promise<std::string>> enableTwoFactorAuthentication(const std::string& p) { return callString(filen_bridge_enable_two_factor_authentication, p); }
-    std::shared_ptr<Promise<void>> disableTwoFactorAuthentication(const std::string& p) { return callVoid(filen_bridge_disable_two_factor_authentication, p); }
-    std::shared_ptr<Promise<void>> deleteAccount(const std::string& p) { return callVoid(filen_bridge_delete_account, p); }
-    std::shared_ptr<Promise<std::string>> fetchUserPublicKey(const std::string& p) { return callString(filen_bridge_fetch_user_public_key, p); }
-    std::shared_ptr<Promise<void>> didExportMasterKeys(const std::string& p) { return callVoid(filen_bridge_did_export_master_keys, p); }
-    std::shared_ptr<Promise<std::string>> fetchAccount(const std::string& p) { return callString(filen_bridge_fetch_account, p); }
-    std::shared_ptr<Promise<void>> changePassword(const std::string& p) { return callVoid(filen_bridge_change_password, p); }
+    std::shared_ptr<Promise<std::string>> enableTwoFactorAuthentication(std::optional<std::string> twoFactorCode) {
+        auto b = JsonBuilder();
+        b.str("twoFactorCode", twoFactorCode);
+        return callString(filen_bridge_enable_two_factor_authentication, b.build());
+    }
+    std::shared_ptr<Promise<void>> disableTwoFactorAuthentication(std::optional<std::string> twoFactorCode) {
+        auto b = JsonBuilder();
+        b.str("twoFactorCode", twoFactorCode);
+        return callVoid(filen_bridge_disable_two_factor_authentication, b.build());
+    }
+    std::shared_ptr<Promise<void>> deleteAccount(std::optional<std::string> twoFactorCode) {
+        auto b = JsonBuilder();
+        b.str("twoFactorCode", twoFactorCode);
+        return callVoid(filen_bridge_delete_account, b.build());
+    }
+    std::shared_ptr<Promise<std::string>> fetchUserPublicKey(const std::string& email) {
+        return callString(filen_bridge_fetch_user_public_key, JsonBuilder().str("email", email).build());
+    }
+    std::shared_ptr<Promise<void>> didExportMasterKeys() { return callVoid(filen_bridge_did_export_master_keys, "{}"); }
+    std::shared_ptr<Promise<std::string>> fetchAccount() { return callString(filen_bridge_fetch_account, "{}"); }
+    std::shared_ptr<Promise<void>> changePassword(const std::string& currentPassword, const std::string& newPassword) {
+        return callVoid(filen_bridge_change_password, JsonBuilder().str("currentPassword", currentPassword).str("newPassword", newPassword).build());
+    }
     std::shared_ptr<Promise<void>> updatePersonalInformation(const std::string& p) { return callVoid(filen_bridge_update_personal_information, p); }
     std::shared_ptr<Promise<void>> updateNickname(const std::string& p) { return callVoid(filen_bridge_update_nickname, p); }
     std::shared_ptr<Promise<void>> changeEmail(const std::string& p) { return callVoid(filen_bridge_change_email, p); }
-    std::shared_ptr<Promise<std::string>> fetchGDPR(const std::string& p) { return callString(filen_bridge_fetch_gdpr, p); }
-    std::shared_ptr<Promise<void>> toggleVersioning(const std::string& p) { return callVoid(filen_bridge_toggle_versioning, p); }
-    std::shared_ptr<Promise<void>> toggleLoginAlerts(const std::string& p) { return callVoid(filen_bridge_toggle_login_alerts, p); }
-    std::shared_ptr<Promise<void>> deleteAllVersionedFiles(const std::string& p) { return callVoid(filen_bridge_delete_all_versioned_files, p); }
-    std::shared_ptr<Promise<void>> deleteEverything(const std::string& p) { return callVoid(filen_bridge_delete_everything, p); }
+    std::shared_ptr<Promise<std::string>> fetchGDPR() { return callString(filen_bridge_fetch_gdpr, "{}"); }
+    std::shared_ptr<Promise<void>> toggleVersioning(bool enable) {
+        return callVoid(filen_bridge_toggle_versioning, JsonBuilder().boolean("enable", enable).build());
+    }
+    std::shared_ptr<Promise<void>> toggleLoginAlerts(bool enable) {
+        return callVoid(filen_bridge_toggle_login_alerts, JsonBuilder().boolean("enable", enable).build());
+    }
+    std::shared_ptr<Promise<void>> deleteAllVersionedFiles() { return callVoid(filen_bridge_delete_all_versioned_files, "{}"); }
+    std::shared_ptr<Promise<void>> deleteEverything() { return callVoid(filen_bridge_delete_everything, "{}"); }
     std::shared_ptr<Promise<std::string>> fetchEvents(const std::string& p) { return callString(filen_bridge_fetch_events, p); }
     std::shared_ptr<Promise<std::string>> fetchEvent(const std::string& p) { return callString(filen_bridge_fetch_event, p); }
-    std::shared_ptr<Promise<void>> uploadAvatar(const std::string& p) { return callVoid(filen_bridge_upload_avatar, p); }
+    std::shared_ptr<Promise<void>> uploadAvatar(const std::string& uri) {
+        return callVoid(filen_bridge_upload_avatar, JsonBuilder().str("uri", uri).build());
+    }
 
     // FS
-    std::shared_ptr<Promise<std::string>> readFileAsString(const std::string& p) { return callString(filen_bridge_read_file_as_string, p); }
-    std::shared_ptr<Promise<void>> writeFileAsString(const std::string& p) { return callVoid(filen_bridge_write_file_as_string, p); }
+    std::shared_ptr<Promise<std::string>> readFileAsString(const std::string& path) {
+        return callString(filen_bridge_read_file_as_string, JsonBuilder().str("path", path).build());
+    }
+    std::shared_ptr<Promise<void>> writeFileAsString(const std::string& path, const std::string& content) {
+        return callVoid(filen_bridge_write_file_as_string, JsonBuilder().str("path", path).str("content", content).build());
+    }
 
-    // Transfers
+    // Transfers (complex params — keep JSON for upload/download)
     std::shared_ptr<Promise<std::string>> uploadFile(const std::string& p) { return callString(filen_bridge_upload_file, p); }
     std::shared_ptr<Promise<void>> downloadFile(const std::string& p) { return callVoid(filen_bridge_download_file, p); }
     std::shared_ptr<Promise<void>> uploadDirectory(const std::string& p) { return callVoid(filen_bridge_upload_directory, p); }
     std::shared_ptr<Promise<void>> downloadDirectory(const std::string& p) { return callVoid(filen_bridge_download_directory, p); }
-    std::shared_ptr<Promise<std::string>> transferAction(const std::string& p) { return callString(filen_bridge_transfer_action, p); }
-    std::shared_ptr<Promise<std::string>> fetchTransfers(const std::string& p) { return callString(filen_bridge_fetch_transfers, p); }
+    std::shared_ptr<Promise<std::string>> transferAction(const std::string& id, const std::string& action) {
+        return callString(filen_bridge_transfer_action, JsonBuilder().str("id", id).str("action", action).build());
+    }
+    std::shared_ptr<Promise<std::string>> fetchTransfers() { return callString(filen_bridge_fetch_transfers, "{}"); }
 
     // HTTP Server
-    std::shared_ptr<Promise<std::string>> startHttpServer(const std::string& p) { return callString(filen_bridge_start_http_server, p); }
-    std::shared_ptr<Promise<void>> stopHttpServer(const std::string& p) { return callVoid(filen_bridge_stop_http_server, p); }
-    std::shared_ptr<Promise<std::string>> restartHTTPServer(const std::string& p) { return callString(filen_bridge_restart_http_server, p); }
-    std::shared_ptr<Promise<std::string>> httpStatus(const std::string& p) { return callString(filen_bridge_http_status, p); }
+    std::shared_ptr<Promise<std::string>> startHttpServer() { return callString(filen_bridge_start_http_server, "{}"); }
+    std::shared_ptr<Promise<void>> stopHttpServer() { return callVoid(filen_bridge_stop_http_server, "{}"); }
+    std::shared_ptr<Promise<std::string>> restartHTTPServer() { return callString(filen_bridge_restart_http_server, "{}"); }
+    std::shared_ptr<Promise<std::string>> httpStatus() { return callString(filen_bridge_http_status, "{}"); }
+
+public:
+    // Public static escape helper for nested JSON construction
+    static std::string escapePublic(const std::string& s) {
+        std::string r;
+        r.reserve(s.size());
+        for (char c : s) {
+            switch (c) {
+                case '"':  r += "\\\""; break;
+                case '\\': r += "\\\\"; break;
+                case '\b': r += "\\b"; break;
+                case '\f': r += "\\f"; break;
+                case '\n': r += "\\n"; break;
+                case '\r': r += "\\r"; break;
+                case '\t': r += "\\t"; break;
+                default:
+                    if (static_cast<unsigned char>(c) < 0x20) {
+                        char buf[8];
+                        snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned char>(c));
+                        r += buf;
+                    } else {
+                        r += c;
+                    }
+            }
+        }
+        return r;
+    }
 
 private:
     std::shared_ptr<FilenMobileSdkBridge> bridge_;
