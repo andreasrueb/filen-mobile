@@ -35,6 +35,7 @@ async function buildRustForIOS(projectRoot: string, props: IOSRustBuildProps) {
 	const { libName, targets, cargoArgs, crateName } = props
 	const fullRustPath = path.join(projectRoot, "filen-rs")
 
+	// 1. Build Rust static libraries for all targets
 	execSync(
 		`cargo build --lib --release ${targets.map(t => `--target ${t}`).join(" ")} -p ${crateName} ${cargoArgs || ""}`,
 		{
@@ -43,7 +44,7 @@ async function buildRustForIOS(projectRoot: string, props: IOSRustBuildProps) {
 		}
 	)
 
-	// Remove dylibs so the linker only finds the static .a libraries on iOS
+	// 2. Remove dylibs so the linker only finds the static .a libraries
 	for (const t of targets) {
 		const dylib = path.join(fullRustPath, "target", t, "release", `lib${libName}.dylib`)
 
@@ -52,32 +53,15 @@ async function buildRustForIOS(projectRoot: string, props: IOSRustBuildProps) {
 		}
 	}
 
-	execSync(
-		`cargo run -p uniffi-bindgen-swift -- target/${targets[0]!}/release/lib${libName}.a target/uniffi-xcframework-staging-sdk-bridge --swift-sources --headers --modulemap --module-name ${libName}FFI --modulemap-filename module.modulemap`,
-		{
-			cwd: fullRustPath,
-			stdio: "inherit"
-		}
-	)
+	// 3. Generate C header via cbindgen
+	const ffiHeaderDir = path.join(fullRustPath, "target", "ffi-headers")
 
-	const iosTargetPath = path.join(fullRustPath, "target", "ios-sdk-bridge")
+	fs.mkdirSync(ffiHeaderDir, { recursive: true })
 
-	if (fs.existsSync(iosTargetPath)) {
-		await fs.promises.rm(iosTargetPath, {
-			recursive: true,
-			force: true
-		})
-	}
-
-	execSync(
-		`xcodebuild -create-xcframework ${targets
-			.map(t => `-library target/${t}/release/lib${libName}.a -headers target/uniffi-xcframework-staging-sdk-bridge`)
-			.join(" ")} -output target/ios-sdk-bridge/lib${libName}.xcframework`,
-		{
-			cwd: fullRustPath,
-			stdio: "inherit"
-		}
-	)
+	execSync(`cbindgen --crate ${crateName} --output ${ffiHeaderDir}/${libName}_ffi.h`, {
+		cwd: path.join(fullRustPath, crateName),
+		stdio: "inherit"
+	})
 }
 
 const withSdkBridgeIOS: ConfigPlugin<SdkBridgePluginProps> = (config, props) => {
@@ -88,19 +72,6 @@ const withSdkBridgeIOS: ConfigPlugin<SdkBridgePluginProps> = (config, props) => 
 		"ios",
 		async config => {
 			await buildRustForIOS(config.modRequest.projectRoot, ios)
-
-			// Copy the generated Swift binding file to the Expo module's ios/ directory
-			const fullRustPath = path.join(config.modRequest.projectRoot, "filen-rs")
-			const generatedSwiftFile = path.join(
-				fullRustPath,
-				"target",
-				"uniffi-xcframework-staging-sdk-bridge",
-				`${ios.libName}.swift`
-			)
-			const moduleIosDir = path.join(config.modRequest.projectRoot, "modules", "filen-sdk-bridge", "ios")
-
-			await fs.promises.mkdir(moduleIosDir, { recursive: true })
-			await fs.promises.copyFile(generatedSwiftFile, path.join(moduleIosDir, `${ios.libName}.swift`))
 
 			return config
 		}

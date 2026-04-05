@@ -1,9 +1,0 @@
-{
-  "platforms": ["ios", "android"],
-  "ios": {
-    "modules": ["FilenSdkBridgeModule"]
-  },
-  "android": {
-    "modules": ["dev.filen.sdkbridge.FilenSdkBridgeModule"]
-  }
-}

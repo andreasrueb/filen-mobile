@@ -1,19 +1,16 @@
-import FilenSdkBridgeModule from "../../modules/filen-sdk-bridge"
-import type { FilenSdkBridgeModuleType } from "../../modules/filen-sdk-bridge"
+import FilenSdkBridgeModule, { type FilenSdkBridgeModuleType } from "../../modules/filen-sdk-bridge"
 import { useTransfersStore } from "@/stores/transfers.store"
 import axios from "axios"
 
+// Map JS function names to Nitro method names where they differ.
+// "register" is a C++ reserved-ish name, so the native side uses "register_".
+const nativeNameMap: Record<string, string> = {
+	register: "register_"
+}
+
 export class FilenBridge {
-	private initialized: boolean = false
 	private _httpServerPort: number | null = null
 	private _httpAuthToken: string | null = null
-
-	public initialize(): void {
-		if (!this.initialized) {
-			FilenSdkBridgeModule.initialize()
-			this.initialized = true
-		}
-	}
 
 	/**
 	 * Call a handler function on the Rust SDK bridge.
@@ -22,8 +19,6 @@ export class FilenBridge {
 	public async proxy<T = any>(functionName: string, params?: any): Promise<T> {
 		// restartHTTPServer — update local port/token state
 		if (functionName === "restartHTTPServer") {
-			this.initialize()
-
 			const resultJson = await FilenSdkBridgeModule.restartHTTPServer(JSON.stringify({}))
 			const info = JSON.parse(resultJson) as { port: number; authToken: string }
 
@@ -33,17 +28,17 @@ export class FilenBridge {
 			return info as T
 		}
 
-		this.initialize()
-
 		const paramsJson = JSON.stringify(params ?? {})
+		const nativeName = nativeNameMap[functionName] ?? functionName
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const nativeModule = FilenSdkBridgeModule as any
 
-		if (typeof nativeModule[functionName] !== "function") {
-			throw new Error(`[FilenBridge] No native function for ${functionName}`)
+		if (typeof nativeModule[nativeName] !== "function") {
+			throw new Error(`[FilenBridge] No native function for ${functionName} (mapped: ${nativeName})`)
 		}
 
-		const result = await nativeModule[functionName](paramsJson)
+		const result = await nativeModule[nativeName](paramsJson)
 
 		// For functions that return JSON, parse the result
 		if (typeof result === "string" && result.length > 0) {
@@ -123,8 +118,6 @@ export class FilenBridge {
 	 * Start the Rust SDK bridge and HTTP server.
 	 */
 	public async start(): Promise<void> {
-		this.initialize()
-
 		try {
 			const resultJson = await FilenSdkBridgeModule.startHttpServer(JSON.stringify({}))
 			const info = JSON.parse(resultJson) as { port: number; authToken: string }
@@ -151,7 +144,7 @@ export class FilenBridge {
 	}
 
 	public get ready(): boolean {
-		return this.initialized
+		return true
 	}
 
 	public get httpServerPort(): number | null {
@@ -171,8 +164,6 @@ export class FilenBridge {
 	}
 
 	public async updateTransfers(): Promise<void> {
-		this.initialize()
-
 		const resultJson = await FilenSdkBridgeModule.fetchTransfers(JSON.stringify({}))
 		const data = JSON.parse(resultJson) as {
 			transfers: Transfer[]

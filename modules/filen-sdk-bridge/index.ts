@@ -1,6 +1,7 @@
-import { NitroModules } from "react-native-nitro-modules"
+import { NitroModules, type HybridObject } from "react-native-nitro-modules"
 
-export interface FilenSdkBridgeModuleType {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface FilenSdkBridgeModuleType extends HybridObject<{}> {
 	// Auth
 	login(paramsJson: string): Promise<string>
 	register_(paramsJson: string): Promise<void>
