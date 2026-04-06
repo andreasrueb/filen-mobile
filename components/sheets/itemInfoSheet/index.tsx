@@ -3,7 +3,7 @@ import { Sheet, useSheetRef } from "@/components/nativewindui/Sheet"
 import events from "@/lib/events"
 import { randomUUID } from "expo-crypto"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { BottomSheetView } from "@gorhom/bottom-sheet"
+import { BottomSheetView } from "@/components/styled"
 import Info from "./info"
 import { BackHandler } from "react-native"
 

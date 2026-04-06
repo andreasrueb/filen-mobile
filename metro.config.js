@@ -2,7 +2,7 @@
 
 // Learn more https://docs.expo.io/guides/customizing-metro
 const { getDefaultConfig } = require("expo/metro-config")
-const { withNativeWind } = require("nativewind/metro")
+const { withUniwindConfig } = require("uniwind/metro")
 const nodeStdlibBrowser = require("node-stdlib-browser")
 
 const defaultConfig = getDefaultConfig(__dirname)
@@ -31,7 +31,7 @@ const config = {
 	}
 }
 
-module.exports = withNativeWind(config, {
-	input: "./global.css",
-	inlineRem: 16
+module.exports = withUniwindConfig(config, {
+	cssEntryFile: "./global.css",
+	polyfills: { rem: 16 }
 })

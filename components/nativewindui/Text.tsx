@@ -1,12 +1,7 @@
 import { VariantProps, cva } from "class-variance-authority"
-import { cssInterop } from "nativewind"
 import { useContext, createContext, memo } from "react"
 import { cn } from "@/lib/cn"
 import { Text as RNText } from "react-native"
-
-cssInterop(RNText, {
-	className: "style"
-})
 
 export const textVariants = cva("text-foreground", {
 	variants: {

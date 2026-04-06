@@ -1,15 +1,19 @@
 import { ICON_MAPPING, type MaterialIconName } from "@roninoss/icons"
-import { cssInterop } from "nativewind"
+import { withUniwind } from "uniwind"
 import { memo, forwardRef } from "react"
 import { View } from "react-native"
 // @ts-expect-error Types exported wrong
 // eslint-disable-next-line import/no-unresolved
-import { ContextMenuView, MenuAttributes, MenuConfig, MenuElementConfig, OnPressMenuItemEvent } from "react-native-ios-context-menu"
+import {
+	ContextMenuView as RawContextMenuView,
+	MenuAttributes,
+	MenuConfig,
+	MenuElementConfig,
+	OnPressMenuItemEvent
+} from "react-native-ios-context-menu"
 import type { ContextItem, ContextMenuConfig, ContextMenuProps, ContextMenuRef, ContextSubMenu } from "./types"
 
-cssInterop(ContextMenuView, {
-	className: "style"
-})
+const ContextMenuView = withUniwind(RawContextMenuView)
 
 export const PREVIEW_CONFIG = {
 	previewSize: "INHERIT",

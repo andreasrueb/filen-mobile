@@ -1,6 +1,5 @@
 import { Icon, type IconProps as ROIconProps } from "@roninoss/icons"
 import BlurView from "@/components/blurView"
-import { cssInterop } from "nativewind"
 import { memo, forwardRef, Fragment } from "react"
 import { Platform, View, ViewProps } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -8,10 +7,6 @@ import { Button, ButtonProps } from "~/components/nativewindui/Button"
 import { Text } from "~/components/nativewindui/Text"
 import { cn } from "~/lib/cn"
 import { useColorScheme } from "~/lib/useColorScheme"
-
-cssInterop(BlurView, {
-	className: "style"
-})
 
 export type ToolbarProps = Omit<ViewProps, "children" | "style"> & {
 	leftView?: React.ReactNode

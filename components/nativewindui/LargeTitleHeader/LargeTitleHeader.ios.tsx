@@ -42,18 +42,15 @@ export const LargeTitleHeader = memo((props: LargeTitleHeaderProps) => {
 				: props.rightView
 				? headerProps => <View className="flex-row justify-center gap-4">{props.rightView!(headerProps)}</View>
 				: undefined,
-			headerShown: props.shown,
+			headerShown: props.shown ?? true,
 			headerTitle: props.title,
-			headerTransparent: props.iosBlurEffect !== "none",
+			headerTransparent: false,
 			headerLargeStyle: {
 				backgroundColor: props.backgroundColor ?? colors.background
 			},
-			headerStyle:
-				props.iosBlurEffect === "none"
-					? {
-							backgroundColor: props.backgroundColor ?? colors.background
-					  }
-					: undefined,
+			headerStyle: {
+				backgroundColor: props.backgroundColor ?? colors.background
+			},
 			headerSearchBarOptions: props.searchBar
 				? {
 						autoCapitalize: props.searchBar?.autoCapitalize,

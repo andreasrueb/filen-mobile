@@ -1,5 +1,5 @@
 import { memo, useRef, useEffect, useCallback, useState } from "react"
-import { BottomSheetView } from "@gorhom/bottom-sheet"
+import { BottomSheetView } from "@/components/styled"
 import events from "@/lib/events"
 import { randomUUID } from "expo-crypto"
 import { DEFAULT_DIRECTORY_COLOR } from "@/assets/fileIcons"

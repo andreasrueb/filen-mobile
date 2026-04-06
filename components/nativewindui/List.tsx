@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority"
-import { cssInterop } from "nativewind"
+import { withUniwind } from "uniwind"
 import { memo, forwardRef, useMemo, useCallback, Fragment } from "react"
 import { Platform, PressableProps, StyleProp, TextStyle, View, ViewProps, ViewStyle } from "react-native"
 import useDimensions from "@/hooks/useDimensions"
@@ -8,17 +8,14 @@ import { Button } from "@/components/nativewindui/Button"
 import { cn } from "@/lib/cn"
 
 import {
-	FlashList,
+	FlashList as RawFlashList,
 	type ListRenderItem as FlashListListRenderItem,
 	type ListRenderItemInfo,
 	type FlashListProps,
 	type FlashListRef
 } from "@shopify/flash-list"
 
-cssInterop(FlashList, {
-	className: "style",
-	contentContainerClassName: "contentContainerStyle"
-})
+const FlashList = withUniwind(RawFlashList)
 
 export type ListDataItem =
 	| string

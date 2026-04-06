@@ -1,5 +1,6 @@
 import { memo } from "react"
-import { type SafeAreaViewProps, type Edge, SafeAreaView } from "react-native-safe-area-context"
+import { type SafeAreaViewProps, type Edge } from "react-native-safe-area-context"
+import { SafeAreaView } from "@/components/styled"
 import { cn } from "@/lib/cn"
 
 export const Container = memo(

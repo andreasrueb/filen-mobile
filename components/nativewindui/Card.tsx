@@ -1,21 +1,15 @@
 import * as Slot from "@rn-primitives/slot"
 import BlurView from "@/components/blurView"
 import TurboImage, { type TurboImageProps } from "react-native-turbo-image"
-import { LinearGradient } from "expo-linear-gradient"
-import { cssInterop } from "nativewind"
+import { LinearGradient as RawLinearGradient } from "expo-linear-gradient"
+import { withUniwind } from "uniwind"
 import { memo, forwardRef, Fragment, useMemo } from "react"
 import { Platform, StyleSheet, View } from "react-native"
 import { Text, TextClassContext } from "@/components/nativewindui/Text"
 import { cn } from "@/lib/cn"
 import { useColorScheme } from "@/lib/useColorScheme"
 
-cssInterop(BlurView, {
-	className: "style"
-})
-
-cssInterop(LinearGradient, {
-	className: "style"
-})
+const LinearGradient = withUniwind(RawLinearGradient)
 
 export const Card = memo(
 	forwardRef<React.ElementRef<typeof View>, React.ComponentPropsWithoutRef<typeof View> & { rootClassName?: string }>(
