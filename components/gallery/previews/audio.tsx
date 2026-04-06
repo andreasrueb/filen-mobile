@@ -26,31 +26,13 @@ import download from "@/lib/download"
 import alerts from "@/lib/alerts"
 import pathModule from "path"
 
-export const Audio = memo(
-	({
-		item,
-		layout
-	}: {
-		item: GalleryItem
-		layout: {
-			width: number
-			height: number
-		}
-	}) => {
+export const Audio = memo(({ item }: { item: GalleryItem }) => {
 		useSetExpoAudioMode()
 
 		const { colors } = useColorScheme()
 		const trackPlayerControls = useTrackPlayerControls()
 		const { insets } = useDimensions()
 		const httpServer = useHTTPServer()
-
-		const style = useMemo(() => {
-			return {
-				width: layout.width,
-				height: layout.height,
-				flex: 1
-			}
-		}, [layout.width, layout.height])
 
 		const source = useMemo(() => {
 			if (item.itemType === "remoteItem") {
@@ -174,13 +156,13 @@ export const Audio = memo(
 		return (
 			<View
 				className="flex-1"
-				style={style}
+	
 			>
 				{!source ? (
 					<Animated.View
 						exiting={FadeOut}
 						className="flex-1 absolute top-0 left-0 right-0 bottom-0 z-50 bg-background items-center justify-center"
-						style={style}
+			
 					>
 						<ActivityIndicator
 							color={colors.foreground}
@@ -193,7 +175,7 @@ export const Audio = memo(
 							<Animated.View
 								exiting={FadeOut}
 								className="flex-1 absolute top-0 left-0 right-0 bottom-0 z-50 bg-background items-center justify-center"
-								style={style}
+					
 							>
 								<ActivityIndicator
 									color={colors.foreground}
@@ -203,18 +185,18 @@ export const Audio = memo(
 						)}
 						<Pressable
 							className="flex-1 flex-col items-center justify-center"
-							style={style}
+				
 							onPress={togglePlay}
 						>
 							<Icon
 								name="music-note"
-								size={layout.width / 2}
+								size={160}
 								color={colors.grey2}
 							/>
 							<View className="flex-1 absolute top-0 left-0 right-0 bottom-0 z-50 items-center justify-center">
 								<Icon
 									name={playerStatus.playing ? "pause-circle" : "play-circle"}
-									size={layout.width / 6}
+									size={56}
 									color={colors.foreground}
 								/>
 							</View>

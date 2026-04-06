@@ -22,17 +22,7 @@ import { useMMKVObject } from "react-native-mmkv"
 import mmkvInstance from "@/lib/mmkv"
 import { type BiometricAuth, BIOMETRIC_AUTH_KEY } from "@/app/settings/security"
 
-export const Video = memo(
-	({
-		item,
-		layout
-	}: {
-		item: GalleryItem
-		layout: {
-			width: number
-			height: number
-		}
-	}) => {
+export const Video = memo(({ item }: { item: GalleryItem }) => {
 		const [loading, setLoading] = useState<boolean>(true)
 		const [error, setError] = useState<string | null>(null)
 		const { colors, isDarkColorScheme } = useColorScheme()
@@ -46,14 +36,6 @@ export const Video = memo(
 		const [playing, setPlaying] = useState<boolean>(false)
 		const [duration, setDuration] = useState<number>(0)
 		const [, setBiometricAuth] = useMMKVObject<BiometricAuth>(BIOMETRIC_AUTH_KEY, mmkvInstance)
-
-		const style = useMemo(() => {
-			return {
-				width: layout.width,
-				height: layout.height,
-				flex: 1
-			}
-		}, [layout.width, layout.height])
 
 		const source = useMemo(() => {
 			if (item.itemType === "remoteItem") {
@@ -192,7 +174,7 @@ export const Video = memo(
 		return (
 			<View
 				className="flex-1"
-				style={style}
+	
 			>
 				{!source ? (
 					<Animated.View
@@ -201,7 +183,7 @@ export const Video = memo(
 							"flex-1 absolute top-0 left-0 right-0 bottom-0 z-50 items-center justify-center",
 							isDarkColorScheme ? "bg-black" : "bg-white"
 						)}
-						style={style}
+			
 					>
 						<ActivityIndicator
 							color={colors.foreground}
@@ -217,7 +199,7 @@ export const Video = memo(
 									"flex-1 absolute top-0 left-0 right-0 bottom-0 z-50 items-center justify-center",
 									isDarkColorScheme ? "bg-black" : "bg-white"
 								)}
-								style={style}
+					
 							>
 								<ActivityIndicator
 									color={colors.foreground}
@@ -232,7 +214,7 @@ export const Video = memo(
 									"flex-1 absolute top-0 left-0 right-0 bottom-0 z-50 items-center justify-center",
 									isDarkColorScheme ? "bg-black" : "bg-white"
 								)}
-								style={style}
+					
 							>
 								<Icon
 									name="video-outline"
@@ -245,18 +227,13 @@ export const Video = memo(
 						{!error && (
 							<View
 								className="flex-1"
-								style={[
-									style,
-									{
-										paddingTop: headerHeight
-									}
-								]}
+								style={{ paddingTop: headerHeight }}
 							>
 								<View className="flex-1">
 									<VideoView
 										ref={videoViewRef}
 										player={player}
-										style={style}
+										style={{ flex: 1 }}
 										nativeControls={isFullscreen}
 										fullscreenOptions={{
 											enable: true

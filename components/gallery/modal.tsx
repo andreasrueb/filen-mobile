@@ -1,4 +1,4 @@
-import { useEffect, memo, useCallback, useMemo } from "react"
+import { useEffect, memo, useCallback, useMemo, useRef } from "react"
 import { BackHandler, View, Pressable, FlatList, Platform, Modal, useWindowDimensions } from "react-native"
 import { useGalleryStore, type GalleryItem } from "@/stores/gallery.store"
 import { useShallow } from "zustand/shallow"
@@ -10,19 +10,15 @@ import Audio from "./previews/audio"
 import Header from "./header"
 import { translateMemoized } from "@/lib/i18n"
 import { Text } from "../nativewindui/Text"
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated"
+import Animated, { FadeOut } from "react-native-reanimated"
 import { ActivityIndicator } from "../nativewindui/ActivityIndicator"
 import { useColorScheme } from "@/lib/useColorScheme"
 import { cn } from "@/lib/cn"
 import { PortalHost } from "@rn-primitives/portal"
 
-export const Item = memo(({ item, index, layout }: { item: GalleryItem; index: number; layout: { width: number; height: number } }) => {
+export const Item = memo(({ item, index }: { item: GalleryItem; index: number }) => {
 	const { colors, isDarkColorScheme } = useColorScheme()
-	const currentVisibleIndex = useGalleryStore(useShallow(state => state.currentVisibleIndex))
-
-	const visible = useMemo(() => {
-		return (currentVisibleIndex ?? -1) === index
-	}, [currentVisibleIndex, index])
+	const visible = useGalleryStore(state => state.currentVisibleIndex === index)
 
 	const onPress = useCallback(() => {
 		if (item.previewType !== "image") {
@@ -41,17 +37,11 @@ export const Item = memo(({ item, index, layout }: { item: GalleryItem; index: n
 	}, [item.previewType])
 
 	return (
-		<Animated.View
-			className="flex-1 flex-row items-center justify-center overflow-hidden"
-			entering={FadeIn}
-			exiting={FadeOut}
-			style={layout}
-		>
+		<View className="flex-1 flex-row items-center justify-center overflow-hidden">
 			<Pressable
 				className="flex-1"
 				onPress={onPress}
 				onLongPress={onLongPress}
-				style={layout}
 			>
 				{!visible ? (
 					<Animated.View
@@ -64,7 +54,6 @@ export const Item = memo(({ item, index, layout }: { item: GalleryItem; index: n
 									: "bg-white"
 								: "bg-background"
 						)}
-						style={layout}
 					>
 						<ActivityIndicator
 							color={colors.foreground}
@@ -72,37 +61,18 @@ export const Item = memo(({ item, index, layout }: { item: GalleryItem; index: n
 						/>
 					</Animated.View>
 				) : item.previewType === "image" ? (
-					<Image
-						layout={layout}
-						item={item}
-					/>
+					<Image item={item} />
 				) : item.previewType === "video" ? (
-					<Video
-						layout={layout}
-						item={item}
-					/>
+					<Video item={item} />
 				) : item.previewType === "audio" ? (
-					<Audio
-						layout={layout}
-						item={item}
-					/>
-				) : item.previewType === "unknown" ? (
-					<View
-						className="flex-1 flex-row items-center justify-center"
-						style={layout}
-					>
-						<Text className="text-white">{translateMemoized("gallery.noPreviewAvailable")}</Text>
-					</View>
+					<Audio item={item} />
 				) : (
-					<View
-						className="flex-1 flex-row items-center justify-center"
-						style={layout}
-					>
+					<View className="flex-1 flex-row items-center justify-center">
 						<Text className="text-white">{translateMemoized("gallery.noPreviewAvailable")}</Text>
 					</View>
 				)}
 			</Pressable>
-		</Animated.View>
+		</View>
 	)
 })
 
@@ -112,24 +82,19 @@ export const GalleryModal = memo(() => {
 	const visible = useGalleryStore(useShallow(state => state.visible))
 	const items = useGalleryStore(useShallow(state => state.items))
 	const dimensions = useWindowDimensions()
+	const dimensionsRef = useRef(dimensions)
+	dimensionsRef.current = dimensions
 	const initialIndex = useGalleryStore(useShallow(state => state.initialIndex))
 	const currentVisibleIndex = useGalleryStore(useShallow(state => state.currentVisibleIndex))
 
-	const renderItem = useCallback(
-		(item: GalleryItem, index: number) => {
-			return (
-				<Item
-					item={item}
-					index={index}
-					layout={{
-						width: dimensions.width,
-						height: dimensions.height
-					}}
-				/>
-			)
-		},
-		[dimensions]
-	)
+	const renderItem = useCallback((item: GalleryItem, index: number) => {
+		return (
+			<Item
+				item={item}
+				index={index}
+			/>
+		)
+	}, [])
 
 	const keyExtractor = useCallback((item: GalleryItem) => {
 		return item.itemType === "cloudItem" ? item.data.item.uuid : item.data.uri
@@ -145,11 +110,11 @@ export const GalleryModal = memo(() => {
 
 	const getItemLayout = useCallback(
 		(_: unknown, index: number) => ({
-			length: dimensions.width,
-			offset: dimensions.width * index,
+			length: dimensionsRef.current.width,
+			offset: dimensionsRef.current.width * index,
 			index
 		}),
-		[dimensions.width]
+		[]
 	)
 
 	const onIndexChange = useCallback((index: number) => {
@@ -160,13 +125,13 @@ export const GalleryModal = memo(() => {
 		return {
 			keyExtractor: keyExtractor as (item: unknown) => string,
 			windowSize: 3,
-			initialNumToRender: 3,
+			initialNumToRender: 1,
 			updateCellsBatchingPeriod: 100,
 			showsVerticalScrollIndicator: false,
 			showsHorizontalScrollIndicator: false,
-			maxToRenderPerBatch: 3,
+			maxToRenderPerBatch: 1,
 			getItemLayout,
-			removeClippedSubviews: false,
+			removeClippedSubviews: true,
 			initialScrollIndex: validatedInitialScrollIndex
 		} satisfies GestureViewerProps<GalleryItem, typeof FlatList>["listProps"]
 	}, [keyExtractor, getItemLayout, validatedInitialScrollIndex])
@@ -227,11 +192,7 @@ export const GalleryModal = memo(() => {
 		>
 			<View className="flex-1">
 				<Header />
-				<Animated.View
-					className="flex-1"
-					entering={FadeIn}
-					exiting={FadeOut}
-				>
+				<View className="flex-1">
 					<GestureViewer
 						data={items}
 						width={dimensions.width}
@@ -251,7 +212,7 @@ export const GalleryModal = memo(() => {
 						onDismiss={onDismiss}
 						onDismissStart={onDismissStart}
 					/>
-				</Animated.View>
+				</View>
 				{Platform.OS === "android" && <PortalHost />}
 			</View>
 		</Modal>
