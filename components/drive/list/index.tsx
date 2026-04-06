@@ -234,6 +234,7 @@ export const DriveList = memo(({ queryParams, scrollToUUID }: { queryParams: Fet
 						refreshControl={refreshControl}
 						maxItemsInRecyclePool={0}
 						drawDistance={Math.floor(screen.height / 4)}
+						scrollsToTop={false}
 					/>
 				) : (
 					<List
@@ -250,6 +251,7 @@ export const DriveList = memo(({ queryParams, scrollToUUID }: { queryParams: Fet
 						ListEmptyComponent={ListEmptyComponent}
 						ListFooterComponent={ListFooterComponent}
 						refreshControl={refreshControl}
+						scrollsToTop={false}
 					/>
 				)}
 			</View>
